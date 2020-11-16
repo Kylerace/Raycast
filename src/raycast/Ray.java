@@ -23,9 +23,10 @@ public class Ray {
     private boolean hit = false;
     private int side;
     private double perpWallDist;
+    private RayMap worldMap;
     //so many vars reeeeeeeee
     int squaresToCheck = 10000;//this is how many map squares each ray will go through until they give up (if they dont hit anything)
-    public Ray (double x, double y, double angle) {
+    public Ray (double x, double y, double angle, double pAngle, RayMap inputMap) {
         this.x1 = x;
         this.y1 = y;
         this.mapX = (int)x;
@@ -34,8 +35,9 @@ public class Ray {
         //this.y2 = y1 + Math.sin(angle) * Math.sqrt(Math.pow(Main.windowX, 2) + Math.pow(Main.windowY, 2)) + 1;//ill probably not use it like this
         this.rayDirX = Math.cos(angle);//this represents the distance in the x direction on the unit circle, if this doesnt work add x1?
         this.rayDirY = Math.sin(angle);//this represents the distance in the y direction on the unit circle, if this doesnt work add y1?
-        this.deltaDistX = Math.sqrt((1.0+Math.pow(rayDirY, 2)/Math.pow(rayDirX, 2)));
-        this.deltaDistY = Math.sqrt((1.0+Math.pow(rayDirX, 2)/Math.pow(rayDirY, 2)));
+        this.deltaDistX = Math.sqrt((1.0 + Math.pow(rayDirY, 2) / Math.pow(rayDirX, 2)));
+        this.deltaDistY = Math.sqrt((1.0 + Math.pow(rayDirX, 2) / Math.pow(rayDirY, 2)));
+        this.worldMap = inputMap;
     }
     public double findCollision() {
         int iteration = 0;
@@ -55,7 +57,17 @@ public class Ray {
             sideDistY = (mapY + 1.0 - y1) * deltaDistY;
         }
         while (!hit && iteration < squaresToCheck) {
-
+            if (sideDistX < sideDistY) {
+                sideDistX += deltaDistX;
+                mapX += stepX;
+                side = 0;
+            } else {
+                sideDistY += deltaDistY;
+                mapY += stepY;
+                side = 1;
+            }
+            //if ()
+            iteration++;
         }
         return distance;
     }

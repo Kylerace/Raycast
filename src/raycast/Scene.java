@@ -65,7 +65,7 @@ public class Scene extends JPanel {
         for (int i = 0; i < Main.mazeSize; i++) { //This displays the maze graphically
             for (int j = 0; j < Main.mazeSize; j++) {
                 if (mazeWalls[i][j] == 1) {
-                    g2d.fillRect(j * Main.cellSize, i * Main.cellSize, Main.cellSize - 1, Main.cellSize - 1);
+                    g2d.fillRect(j * Main.cellSize, i * Main.cellSize, Main.cellSize, Main.cellSize);
                 }
             }
         }

@@ -25,11 +25,12 @@ public class Main extends JFrame implements ActionListener {
     static Timer keyTimer = new Timer(10, new Main()); //This is the clock of the game. It runs a tick every 10ms
     public static int windowX = 400;
     public static int windowY = 400;
+    public static int winYOffset = 40;
     public static void main(String[] args) {
         //Pretty standard graphics setup
         JFrame f = new JFrame();
 
-        f.setSize(windowX, windowY + 40); /* The 40 is for the window bar */
+        f.setSize(windowX, windowY + winYOffset); /* The 40 is for the window bar */
         f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         f.addKeyListener(new KeyListener() { //This KeyListener is what allows movement inputs to be detected.
             //If a key is held down during the tick, then the corresponding movement boolean will be true.
