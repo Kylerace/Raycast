@@ -1,47 +1,48 @@
 package raycast;
 
+import java.awt.Point;
+import java.util.Map;
+import java.util.Set;
+import java.util.TreeMap;
+
 public class RayMap {
-    private int[][] fullMap;
-    private int[][][] typeList;
-    /*
-    immobile types (so far only walls and floors which are type 1 and 0 respectively) are mapped point by point onto fullMap.
-    movable types are in a list and in order to check if a point collides with them you simply check if its distance to their center is less than 
-    a certain value.
-    */
-    public RayMap (int width, int height) {
-        fullMap = new int[width][height];
-        typeList = new int[width][height][1000];//objects are organized by x,y, and type
-    }
-    public void add(int type, int x, int y) {
-        switch(type) {
-            case 0:
-            return;
-            case 1:
-            addRectWall(x,y);
-        }
-    }
-    private void addRectWall(int x, int y) {
-        if (typeList[x][y][1] == 0) {//if the specified type doesnt exist in the record
-            typeList[x][y][1] = 1;
-            for (int i = x; i < 16; i++) {
-                for (int j = y; j < 16; j++) {
-                    fullMap[i][j] = 1;
-                }
+    //each turf has a map of objects that are either fully or partially inside them and their locations
+    //objects tell RayMap their location every turn, RayMap figures out which turfs theyre a part of, then tells all of those turfs
+    //each turf's contents list is consulted every time a ray intersects them
+    public Turf[][] turfList;
+    private int totalX;
+    private int totalY;
+    private int resolution;
+    private int turfSize;//should be the CELL size, so that resolution/cellsize = number of maze tiles
+    private int turfTilesOnASide;
+    private int[] turfXCenters;
+    private int[] turfYCenters;
+    private Atom[] movables;
+    private Map<Atom, Turf[]> atomLocations;
+    private int[][] Maze;
+    public RayMap() {
+        //tell the RayMap constructor how big the 2d screen is, and how big you want each turf
+        this.Maze = Scene.getLevel();
+        this.turfTilesOnASide = Main.mazeSize;
+        this.atomLocations = new TreeMap<>();
+        this.resolution = Main.resolution;
+        this.turfSize = Main.cellSize;
+        for (int i = 0; i < turfTilesOnASide; i++) {
+            for (int j = 0; j < turfTilesOnASide; j++) {
+                turfList[i][j] = new Turf(i * turfSize, j * turfSize, turfSize, Maze[i][j]);
             }
-        } else {
-            return;
         }
     }
-
-    public void remove(int type, int x, int y) {
-
-    }
-
-    public void move(int type, int x, int y) {
+    public void placeAtomAtCoords(int x, int y, Atom toBePlaced) {
 
     }
+    public void atomMoveConsult(Atom hasMoved, Point newPoint) {
 
-    public boolean checkObject(int type, int x, int y) {
-        return false;
+    }
+    public void findTurfForPoint(Point placingPoint) {
+
+    }
+    public void changeTurf(Turf oldTurf, Turf newTurf) {
+
     }
 }

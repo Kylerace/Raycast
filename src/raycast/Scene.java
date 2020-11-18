@@ -20,14 +20,16 @@ public class Scene extends JPanel {
     private double playerX;
     private double playerY;
     private int playerRotation = 0; //This is in degrees so that I can just use an int.
-    private Maze maze = new Maze(Main.mazeSize, Main.mazeSize);
-    private int[][] mazeWalls = maze.getMaze();
+    private static Maze maze = new Maze(Main.mazeSize, Main.mazeSize);
+    private static int[][] mazeWalls = maze.getMaze();
 
     public Scene(double x, double y) {
         this.playerX = x;
         this.playerY = y;
     }
-
+    public static int[][] getLevel() {
+        return mazeWalls;
+    }
     public void move(String direction) { //I use some simple trig here to change how the movement is done depending on rotation.
         if (direction.equals("left")) {
             playerX -= Math.cos(Math.toRadians(playerRotation));
