@@ -19,16 +19,23 @@ public class Atom {
     public Atom(int x, int y, double size) {
         this.center = center;
         this.size = size;
-        raymap.placeAtomAtCoords(center.x, center.y, this);
+        RayMap.placeAtomAtCoords(center.x, center.y, this);
     }
     public Atom(double x, double y, double size) {
         int convX = (int)x;
         int convY = (int)y;
         this.center = new Point(convX,convY);
         this.size = size;
-        raymap.placeAtomAtCoords(center.x, center.y, this);
+        RayMap.placeAtomAtCoords(center.x, center.y, this);
     }
     public void initializeAtom() {
 
     }
+    public class Mob extends Atom {
+        
+        public Mob (int x, int y, int size, boolean player) {
+            super(x,y,size);
+        }
+    }
 }
+

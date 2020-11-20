@@ -18,22 +18,26 @@ public class RayMap {
     private int[] turfXCenters;
     private int[] turfYCenters;
     private Atom[] movables;
-    private Map<Atom, Turf[]> atomLocations;
+    private Map<Atom, Turf[]> atomLocations = new TreeMap<>();
     private int[][] Maze;
     public RayMap() {
         //tell the RayMap constructor how big the 2d screen is, and how big you want each turf
         this.Maze = Scene.getLevel();
         this.turfTilesOnASide = Main.mazeSize;
-        this.atomLocations = new TreeMap<>();
         this.resolution = Main.resolution;
         this.turfSize = Main.cellSize;
+        createTurfList();
+    }
+    public void createTurfList() {
         for (int i = 0; i < turfTilesOnASide; i++) {
             for (int j = 0; j < turfTilesOnASide; j++) {
+                System.out.println("i "+i+" j "+j+" turfSize "+turfSize+" Maze[i][j] "+Maze[i][j]);
                 turfList[i][j] = new Turf(i * turfSize, j * turfSize, turfSize, Maze[i][j]);
+                
             }
         }
     }
-    public void placeAtomAtCoords(int x, int y, Atom toBePlaced) {
+    public static void placeAtomAtCoords(int x, int y, Atom toBePlaced) {
 
     }
     public void atomMoveConsult(Atom hasMoved, Point newPoint) {
