@@ -81,8 +81,8 @@ public class Scene extends JPanel {
         g2d.rotate(Math.toRadians(playerRotation), (int)playerX + Main.cellSize / 2, (int)playerY + Main.cellSize / 2);
         g2d.fillRect((int)playerX, (int)playerY, Main.cellSize, Main.cellSize);
         new Ray(playerY/(double)Main.cellSize,playerX/(double)Main.cellSize,Math.toRadians(180-playerRotation),Math.toRadians(180-playerRotation),0);
-        //g2d.fillOval((int)playerX,(int)playerY, Main.cellSize, Main.cellSize);
-        //System.out.println(Main.raymap.findTurfForPosition(playerY, playerX).turfType);
+        //as of right now you need to switch x and y, i dont know why. you also need to subtract player rotation from 180 degrees(and turn it to radians)
+
         g2d.drawLine((int)playerX + Main.cellSize / 2, (int)playerY + Main.cellSize / 2, (int)playerX + Main.cellSize / 2, (int)playerY - Main.cellSize / 2);
     }
 
