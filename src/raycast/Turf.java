@@ -16,7 +16,7 @@ public class Turf {
     private int turfYFar;
     
     private int sideLength;
-
+    public boolean isSpecial;
     public boolean isEmpty = true;
     private Set<Atom> contents;
     public int turfType;
@@ -24,7 +24,6 @@ public class Turf {
     //objects tell RayMap their location every turn, RayMap figures out which turfs theyre a part of, then tells all of those turfs
     //each turf's contents list is consulted every time a ray intersects them
     public Turf(int x, int y, int sideLength, int type) {
-        System.out.println("first");
         this.turfXCoord = x;
         this.turfYCoord = y;
         this.sideLength = sideLength;
@@ -32,9 +31,13 @@ public class Turf {
         this.turfYFar = y + sideLength;
         this.contents = new HashSet<>();
         this.turfType = type;
-        System.out.println("last");
+        isSpecial = false;
     }
-    
+    public boolean toggleSpecial() {
+        boolean oldIsSpecial = isSpecial;
+        isSpecial = !isSpecial;
+        return oldIsSpecial;
+    }
     public void addContents(Atom keyObject) {
         if (turfType != 0) {
             return;//i forgot how to throw custom errors
@@ -44,9 +47,6 @@ public class Turf {
     public void removeContents(Atom keyObject) {
         contents.remove(keyObject);
     }
-    //public Atom[] getAllContents() {
-     //   return contents.keySet().toArray();
-    //}//figure this out later
     
     public int getType() {
         return turfType;

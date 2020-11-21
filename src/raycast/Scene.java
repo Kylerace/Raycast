@@ -20,15 +20,12 @@ public class Scene extends JPanel {
     private double playerX;
     private double playerY;
     private int playerRotation = 0; //This is in degrees so that I can just use an int.
-    private static Maze maze = new Maze(Main.mazeSize, Main.mazeSize);
-    private static int[][] mazeWalls = maze.getMaze();
+    public static Maze maze = new Maze(Main.mazeSize, Main.mazeSize);
+    private int[][] mazeWalls = maze.getMaze();
 
     public Scene(double x, double y) {
         this.playerX = x;
         this.playerY = y;
-    }
-    public static int[][] getLevel() {
-        return mazeWalls;
     }
     public void move(String direction) { //I use some simple trig here to change how the movement is done depending on rotation.
         if (direction.equals("left")) {
@@ -66,14 +63,26 @@ public class Scene extends JPanel {
         g2d.setColor(Color.WHITE);
         for (int i = 0; i < Main.mazeSize; i++) { //This displays the maze graphically
             for (int j = 0; j < Main.mazeSize; j++) {
-                if (mazeWalls[i][j] == 1) {
+                if (Main.raymap.findTurfByIndex(i,j).turfType == 1) {
+                    //g2d.setColor(Color.WHITE);
+                    //System.out.println("i "+i+" j "+j);
                     g2d.fillRect(j * Main.cellSize, i * Main.cellSize, Main.cellSize, Main.cellSize);
                 }
+                /*if (Main.raymap.findTurfByIndex(i,j).isSpecial == true) {//highlight special turfs (turfs that are hit by rays, for testing)
+                    //System.out.println("i "+i+" j "+j);
+                    g2d.setColor(Color.BLUE);
+                    g2d.fillRect(j * Main.cellSize, i * Main.cellSize, Main.cellSize, Main.cellSize);
+                    g2d.setColor(Color.WHITE);
+                }//*/
+
             }
-        }
+        } 
         g2d.setColor(Color.RED);
         g2d.rotate(Math.toRadians(playerRotation), (int)playerX + Main.cellSize / 2, (int)playerY + Main.cellSize / 2);
         g2d.fillRect((int)playerX, (int)playerY, Main.cellSize, Main.cellSize);
+        new Ray(playerY/(double)Main.cellSize,playerX/(double)Main.cellSize,Math.toRadians(180-playerRotation),Math.toRadians(180-playerRotation),0);
+        //g2d.fillOval((int)playerX,(int)playerY, Main.cellSize, Main.cellSize);
+        //System.out.println(Main.raymap.findTurfForPosition(playerY, playerX).turfType);
         g2d.drawLine((int)playerX + Main.cellSize / 2, (int)playerY + Main.cellSize / 2, (int)playerX + Main.cellSize / 2, (int)playerY - Main.cellSize / 2);
     }
 

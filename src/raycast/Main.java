@@ -22,13 +22,13 @@ public class Main extends JFrame implements ActionListener {
     public static int cellSize = resolution / mazeSize;
     private static boolean left, right, backwards, forwards, turnLeft, turnRight, render = false; //These will be used for the movement, and render will be used to determine whether or not a freame needs to be rendered
     private static Scene scene = new Scene(resolution / 2, resolution / 2); //Calls to the graphics function to draw the scene
-    private static RayMap raymap = new RayMap();
+    public static RayMap raymap = new RayMap();
     static Timer keyTimer = new Timer(10, new Main()); //This is the clock of the game. It runs a tick every 10ms
     public static void main(String[] args) {
         //Pretty standard graphics setup
         JFrame f = new JFrame();
 
-        f.setSize(resolution, resolution + 40); /* The 40 is for the window bar */
+        f.setSize(resolution+16, resolution + 40); /* The 40 is for the window bar */
         f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         f.addKeyListener(new KeyListener() { //This KeyListener is what allows movement inputs to be detected.
             //If a key is held down during the tick, then the corresponding movement boolean will be true.
