@@ -28,7 +28,15 @@ public class Main extends JFrame implements ActionListener {
         //Pretty standard graphics setup
         JFrame f = new JFrame();
 
-        f.setSize(resolution+16, resolution + 40); /* The 40 is for the window bar */
+        /* For whatever reason the same settings dont work for all of us, so each of us will get their own setSize bar and they comment it out 
+        for everyone else, when you merge a pr dont worry about it, just set it to what works for you and dont touch the commented out ones
+        The 40 is for the window bar */
+        f.setSize(resolution+16, resolution + 36); //what works for KYLER
+        //f.setSize(resolution, resolution + 36); // what works for NATHAN
+        //f.setSize(resolution+16, resolution + 36); // what works for MATT
+        //f.setSize(resolution+16, resolution + 36); // what works for DYLAN
+        //DO NOT EDIT SOMEONE ELSE'S BAR
+
         f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         f.addKeyListener(new KeyListener() { //This KeyListener is what allows movement inputs to be detected.
             //If a key is held down during the tick, then the corresponding movement boolean will be true.

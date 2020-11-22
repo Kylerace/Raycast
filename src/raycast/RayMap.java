@@ -11,7 +11,7 @@ public class RayMap {
     //RayMap is what tells rays what turf they are currently on, whether it is a wall (so to stop the ray) or a floor (which lets it continue)
     //each turf's contents list will be consulted every time a ray intersects them
     //there should only be one raymap ever
-
+    //TODO: get rid of RayMap, and merge it with the Maze class.
     public static Turf[][] turfList;
     //this is the array that organizes every turf in the game (as of right now at least)
 

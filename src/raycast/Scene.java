@@ -22,7 +22,7 @@ public class Scene extends JPanel {
     private int playerRotation = 0; //This is in degrees so that I can just use an int.
     public static Maze maze = new Maze(Main.mazeSize, Main.mazeSize);
     private int[][] mazeWalls = maze.getMaze();
-    private int rayCastScreenPixelColumns = 4000;
+    private int rayCastScreenPixelColumns = 720;
     public Scene(double x, double y) {
         this.playerX = x;
         this.playerY = y;
