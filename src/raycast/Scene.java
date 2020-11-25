@@ -13,6 +13,8 @@ package raycast;
 
 import java.awt.*;
 import java.awt.image.BufferedImage;
+import java.io.File;
+
 import javax.swing.*;
 
 @SuppressWarnings("serial")
@@ -22,7 +24,7 @@ public class Scene extends JPanel {
     private double playerY;
     private int playerRotation = 0; //This is in degrees so that I can just use an int.
     public static Maze maze = new Maze(Main.mazeSize, Main.mazeSize);
-    private static Texture testTexture = new Texture("assets/textures/TestTexture.png", 1280);
+    private static Texture testTexture = new Texture("Raycast/assets/textures/TestTexture.png", 1280);///"assets/textures/TestTexture.png"
     private static BufferedImage miniMap = maze.getMiniMap();
     private int[][] mazeWalls = maze.getMaze();
     private int rayCastScreenPixelColumns = Main.windowX;
@@ -129,7 +131,7 @@ public class Scene extends JPanel {
         g2d.fillRect(Main.windowX / 5 / 2 + Main.windowX / 64 - Main.cellSize / 8, Main.windowX / 5 / 2 + Main.windowX / 64 - Main.cellSize / 8, Main.cellSize / 4, Main.cellSize / 4);
         //Used for timing the length it takes to render a frame
         double end = System.nanoTime();
-        //System.out.println((double)(end - start)/1000000); //with 4000 rays it should take between 0.8 and 1.3 MILLISECONDS per frame
+        System.out.println((double)(end - start)/1000000); //with 4000 rays it should take between 0.8 and 1.3 MILLISECONDS per frame
     }
 
 }

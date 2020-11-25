@@ -92,8 +92,10 @@ public class Ray {
         }
         if (isYSideOfWall == false) {
             adjustedWallDist = (currentTurfXIndex - x + (1 - nextStepX) / 2) / rayX;
+            collisionCoord = y + adjustedWallDist * rayY;
         } else {
             adjustedWallDist = (playerTurfYIndex - y + (1 - nextStepY) / 2) / rayY;
+            collisionCoord = x + adjustedWallDist * rayX;
         }
         return adjustedWallDist;
     }
