@@ -238,7 +238,7 @@ public class Maze {
 	 * @return a BufferedImage of the map for use in rendering a minimap
 	*/
 	public BufferedImage getMiniMap() {
-		BufferedImage miniMap = new BufferedImage(Main.windowX + Main.cellSize * 8, Main.windowX + Main.cellSize * 8, BufferedImage.TYPE_INT_ARGB);
+		BufferedImage miniMap = new BufferedImage(Main.windowX + Main.cellSize * 8, Main.windowX + Main.cellSize * 8, BufferedImage.TYPE_INT_RGB);
 		Graphics2D g2d = miniMap.createGraphics();
 		g2d.setColor(Color.WHITE);
 		g2d.fillRect(0, 0, miniMap.getWidth(), miniMap.getHeight());

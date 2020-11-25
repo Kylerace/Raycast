@@ -24,7 +24,7 @@ public class Ray {
     private boolean isYSideOfWall;//this is true if the ray is moving up or down this tick, and false otherwise
     private double adjustedWallDist;
     private Point pointOfImpact;
-    private double collisionCoord;
+    private double collisionCoord;//this is the coordinate of the axis parallel to the wall
     //so many vars reeeeeeeee
     int squaresToCheck = 10000;//this is how many map squares each ray will go through until they give up (if they dont hit anything)
     public Ray (double x, double y, double angle, double xColumn) {
@@ -75,11 +75,11 @@ public class Ray {
             if (sideDistX < sideDistY) {
                 sideDistX += distanceRatioX;
                 currentTurfXIndex += nextStepX;
-                collisionCoord = sideDistX + x;
+                collisionCoord = sideDistY + y;
                 isYSideOfWall = false;
             } else {//if the ray is looking for a turf in the Y direction
                 sideDistY += distanceRatioY;
-                collisionCoord = sideDistY + y;
+                collisionCoord = sideDistX + x;
                 playerTurfYIndex += nextStepY;
                 isYSideOfWall = true;
             }
@@ -101,7 +101,8 @@ public class Ray {
      * returns the value for this ray's collision coordinate
      * @return
      */
-    public double getCollisionCoord() {
-        return collisionCoord;
+    public int getWallX(int textureSize) {
+        // System.out.println(collisionCoord % 1 * textureSize);
+        return (int)(collisionCoord % 1 * textureSize);
     }
 } 
