@@ -13,6 +13,7 @@ package raycast;
 
 import java.awt.*;
 import java.awt.image.BufferedImage;
+import java.awt.image.DataBufferInt;
 import java.io.File;
 import javax.swing.*;
 import java.awt.image.DataBufferInt;
@@ -29,8 +30,9 @@ public class Scene extends JPanel {
     private static Texture startTexture = new Texture("assets" + File.separator + "textures" + File.separator + "RedCobblestoneDoor.png", 1280);
     private static Texture exitTexture = new Texture("assets" + File.separator + "textures" + File.separator + "RedCobblestoneExit.png", 1280);
     private static BufferedImage miniMap = maze.getMiniMap();
-    private static BufferedImage screen = new BufferedImage(Main.windowX, Main.windowY, BufferedImage.TYPE_INT_ARGB); //This will be used to render the walls pixel by pixel
-    private static int[] screenPixels = ((DataBufferInt)screen.getRaster().getDataBuffer()).getData();
+    private static BufferedImage screen = new BufferedImage(Main.windowX, Main.windowY, BufferedImage.TYPE_INT_RGB); //This will be used to render the walls pixel by pixel
+    //I found this solution after setting each pixel individually with screen.setRGB() was way too slow. It links the screenPixel array directly to the screen's data, which is why it's faster
+    private static int[] screenPixels = ((DataBufferInt)screen.getRaster().getDataBuffer()).getData(); 
     private int[][] mazeWalls = maze.getMaze();
     private int rayCastScreenPixelColumns = Main.windowX;
     private double lightDropOff;
@@ -105,7 +107,6 @@ public class Scene extends JPanel {
         int textureY;
         int pixelColor;
         Texture currentTexture = wallTexture; //When we have a designated start and end cell, this will have an if statement to display the textures for the start and end
-        
         Graphics s = screen.getGraphics();
         //Sets the floor and ceiling to their colors
         s.setColor(new Color(50, 50, 50));
