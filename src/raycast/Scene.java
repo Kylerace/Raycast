@@ -15,6 +15,7 @@ import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import javax.swing.*;
+import java.awt.image.DataBufferInt;
 
 @SuppressWarnings("serial")
 public class Scene extends JPanel {
@@ -27,6 +28,8 @@ public class Scene extends JPanel {
     private static Texture startTexture = new Texture("assets" + File.separator + "textures" + File.separator + "RedCobblestoneDoor.png", 1280);
     private static Texture exitTexture = new Texture("assets" + File.separator + "textures" + File.separator + "RedCobblestoneExit.png", 1280);
     private static BufferedImage miniMap = maze.getMiniMap();
+    private static BufferedImage screen = new BufferedImage(Main.windowX, Main.windowY, BufferedImage.TYPE_INT_RGB); //This will be used to render the walls pixel by pixel
+    private static int[] screenPixels = ((DataBufferInt)screen.getRaster().getDataBuffer()).getData();
     private int[][] mazeWalls = maze.getMaze();
     private int rayCastScreenPixelColumns = Main.windowX;
     public Scene(double x, double y) {
@@ -100,7 +103,7 @@ public class Scene extends JPanel {
         int textureY;
         int pixelColor;
         Texture currentTexture = wallTexture; //When we have a designated start and end cell, this will have an if statement to display the textures for the start and end
-        BufferedImage screen = new BufferedImage(Main.windowX, Main.windowY, BufferedImage.TYPE_INT_RGB); //This will be used to render the walls pixel by pixel
+        
         Graphics s = screen.getGraphics();
         //Sets the floor and ceiling to their colors
         s.setColor(new Color(50, 50, 50));
@@ -118,11 +121,20 @@ public class Scene extends JPanel {
             textureX = pixel.getWallX(currentTexture.size);
             // System.out.println(textureX);
             //This handles texture mapping by scaling the image down to the appropriate size for each pixel
-            for(int y = 0; y < columnHeight; y++) {
-                textureY = y * currentTexture.size / columnHeight;
-                if ((Main.windowY - columnHeight) / 2 + y >= 0 && (Main.windowY - columnHeight) / 2 + y <= Main.windowY - 1){
-                    pixelColor = currentTexture.pixels[textureX + textureY * currentTexture.size]; //I'd like to figure out how to decrease the brightness of a hex RGB value and use it for lighting
-                    screen.setRGB(x, (Main.windowY - columnHeight) / 2 + y, pixelColor);
+            if (columnHeight > Main.windowY) {
+                for(int y = (columnHeight - Main.windowY) / 2; y < Main.windowY + (columnHeight - Main.windowY) / 2; y++) {
+                    textureY = y * currentTexture.size / columnHeight;
+                    //pixelColor = currentTexture.pixels[textureX + textureY * currentTexture.size]; //I'd like to figure out how to decrease the brightness of a hex RGB value and use it for lighting
+                    //screen.setRGB(x, (Main.windowY - columnHeight) / 2 + y, pixelColor);
+                    screenPixels[x + (y + (Main.windowY - columnHeight) /2 ) * Main.windowX] = currentTexture.pixels[textureX + textureY * currentTexture.size];
+                }
+            }
+            else {
+                for(int y = 0; y < columnHeight; y++) {
+                    textureY = y * currentTexture.size / columnHeight;
+                    //pixelColor = currentTexture.pixels[textureX + textureY * currentTexture.size]; //I'd like to figure out how to decrease the brightness of a hex RGB value and use it for lighting
+                    //screen.setRGB(x, (Main.windowY - columnHeight) / 2 + y, pixelColor);
+                    screenPixels[x + (y + (Main.windowY - columnHeight) /2 ) * Main.windowX] = currentTexture.pixels[textureX + textureY * currentTexture.size];
                 }
             }
             //as of right now you need to switch x and y, i dont know why. you also need to subtract player rotation from 180 degrees
@@ -152,7 +164,7 @@ public class Scene extends JPanel {
         g2d.fillRect(Main.windowX / 5 / 2 + Main.windowX / 64 - Main.cellSize / 8, Main.windowX / 5 / 2 + Main.windowX / 64 - Main.cellSize / 8, Main.cellSize / 4, Main.cellSize / 4);
         //Used for timing the length it takes to render a frame
         double end = System.nanoTime();
-        // System.out.println((double)(end - start)/1000000); //with 4000 rays it should take between 0.8 and 1.3 MILLISECONDS per frame
+        System.out.println((double)(end - start)/1000000); //with 4000 rays it should take between 0.8 and 1.3 MILLISECONDS per frame
     }
 
 }
