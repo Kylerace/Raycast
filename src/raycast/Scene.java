@@ -16,6 +16,7 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import javax.swing.*;
 import java.awt.image.DataBufferInt;
+import java.awt.color.*;
 
 @SuppressWarnings("serial")
 public class Scene extends JPanel {
@@ -28,10 +29,11 @@ public class Scene extends JPanel {
     private static Texture startTexture = new Texture("assets" + File.separator + "textures" + File.separator + "RedCobblestoneDoor.png", 1280);
     private static Texture exitTexture = new Texture("assets" + File.separator + "textures" + File.separator + "RedCobblestoneExit.png", 1280);
     private static BufferedImage miniMap = maze.getMiniMap();
-    private static BufferedImage screen = new BufferedImage(Main.windowX, Main.windowY, BufferedImage.TYPE_INT_RGB); //This will be used to render the walls pixel by pixel
+    private static BufferedImage screen = new BufferedImage(Main.windowX, Main.windowY, BufferedImage.TYPE_INT_ARGB); //This will be used to render the walls pixel by pixel
     private static int[] screenPixels = ((DataBufferInt)screen.getRaster().getDataBuffer()).getData();
     private int[][] mazeWalls = maze.getMaze();
     private int rayCastScreenPixelColumns = Main.windowX;
+    private double lightDropOff;
     public Scene(double x, double y) {
         this.playerX = x;
         this.playerY = y;
@@ -115,6 +117,7 @@ public class Scene extends JPanel {
             double cameraX = 2 * x / (double)rayCastScreenPixelColumns - 1;
             pixel = new Ray(playerY / (double)Main.cellSize, playerX / (double)Main.cellSize, Math.toRadians(180-playerRotation), cameraX);
             collision = pixel.findCollision();
+            lightDropOff = collision * 4;
             //How tall the column of pixels will be at x. We use the inverse of the collision distance because as the distance increases,
             //the height of the column should decrease. This is then multiplied by the window height and scaled by 40
             columnHeight = (int)(1 / collision / Main.cellSize * Main.windowY * 30 * ((double)Main.windowX / 1280));
@@ -126,7 +129,12 @@ public class Scene extends JPanel {
                     textureY = y * currentTexture.size / columnHeight;
                     //pixelColor = currentTexture.pixels[textureX + textureY * currentTexture.size]; //I'd like to figure out how to decrease the brightness of a hex RGB value and use it for lighting
                     //screen.setRGB(x, (Main.windowY - columnHeight) / 2 + y, pixelColor);
-                    screenPixels[x + (y + (Main.windowY - columnHeight) /2 ) * Main.windowX] = currentTexture.pixels[textureX + textureY * currentTexture.size];
+                    int currentPixel = currentTexture.pixels[textureX + textureY * currentTexture.size];
+                    int a = (int)(currentPixel >> 24) & 0xFF;
+                    int r = (int) (((currentPixel >> 16) & 0xFF)); r -= Math.min(lightDropOff, r);
+                    int b = (int) (((currentPixel >> 8) & 0xFF) - 0.05 * collision); b -= Math.min(lightDropOff, b);// * (int)Math.max((0.9 * collision), 0.1));
+                    int green = (int) ((currentPixel & 0xFF) - 0.05 * collision); green -= Math.min(lightDropOff, green);//*/
+                    screenPixels[x + (y + (Main.windowY - columnHeight) /2 ) * Main.windowX] = (a << 24) | (r << 16) | (green << 8) | b;//currentPixel;
                 }
             }
             else {
@@ -134,15 +142,24 @@ public class Scene extends JPanel {
                     textureY = y * currentTexture.size / columnHeight;
                     //pixelColor = currentTexture.pixels[textureX + textureY * currentTexture.size]; //I'd like to figure out how to decrease the brightness of a hex RGB value and use it for lighting
                     //screen.setRGB(x, (Main.windowY - columnHeight) / 2 + y, pixelColor);
-                    screenPixels[x + (y + (Main.windowY - columnHeight) /2 ) * Main.windowX] = currentTexture.pixels[textureX + textureY * currentTexture.size];
+                    int currentPixel = currentTexture.pixels[textureX + textureY * currentTexture.size];
+                    float[] hsv = new float[3];
+                    int a = (int)(currentPixel >> 24) & 0xFF;
+                    int r = (int) (((currentPixel >> 16) & 0xFF)); r -= Math.min(lightDropOff, r);
+                    int b = (int) (((currentPixel >> 8) & 0xFF) - 0.05 * collision); b -= Math.min(lightDropOff, b);// * (int)Math.max((0.9 * collision), 0.1));
+                    int green = (int) ((currentPixel & 0xFF) - 0.05 * collision); green -= Math.min(lightDropOff, green);//*/
+                    screenPixels[x + (y + (Main.windowY - columnHeight) / 2) * Main.windowX] = (a << 24) | (r << 16) | (green << 8) | b;
                 }
             }
             //as of right now you need to switch x and y, i dont know why. you also need to subtract player rotation from 180 degrees
             //and turn it to radians
+            //System.out.println(screenPixels[4]);
+            //System.out.println(collision);
         }
+        
         g2d.drawImage(screen, null, 0, 0);
         g2d.setColor(Color.ORANGE);
-
+        
         /*  THIS STUFF LOOKS LIKE A MESS. In reality, it's a bunch of graphical stuff, so there are a lot of numbers that help determine the scale
             of each GUI element. You don't need to understand exactly how the coordinates are determines, because it has to do with what looked good
             on the screen, but it should be pretty easy to understand what each line does. Basically, just don't worry about the parameters so long
