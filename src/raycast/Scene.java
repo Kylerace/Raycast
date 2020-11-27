@@ -92,12 +92,12 @@ public class Scene extends JPanel {
         repaint();
     }
     @Override
-    public void paintComponent(Graphics g) {
+    public void paintComponent(Graphics graphic) {
         //Used for timing the length it takes to render a frame
         double start = System.nanoTime();
-        super.paintComponent(g);
+        super.paintComponent(graphic);
         this.setBackground(Color.BLACK);
-        Graphics2D g2d = (Graphics2D) g;
+        Graphics2D g2d = (Graphics2D) graphic;
         // g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON); /* This is antialiasing. We can turn this on later if necessary */
         g2d.setColor(Color.WHITE);
         Ray pixel;
@@ -118,44 +118,26 @@ public class Scene extends JPanel {
             double cameraX = 2 * x / (double)rayCastScreenPixelColumns - 1;
             pixel = new Ray(playerY / (double)Main.cellSize, playerX / (double)Main.cellSize, Math.toRadians(180-playerRotation), cameraX);
             collision = pixel.findCollision();
-            lightDropOff = collision * 4;
+            lightDropOff = collision * 4; //how much the brightness drops off as a unit of distance
             //How tall the column of pixels will be at x. We use the inverse of the collision distance because as the distance increases,
             //the height of the column should decrease. This is then multiplied by the window height and scaled by 40
             columnHeight = (int)(1 / collision / Main.cellSize * Main.windowY * 30 * ((double)Main.windowX / 1280));
             textureX = pixel.getWallX(currentTexture.size);
-            // System.out.println(textureX);
             //This handles texture mapping by scaling the image down to the appropriate size for each pixel
-            if (columnHeight > Main.windowY) {
-                for(int y = (columnHeight - Main.windowY) / 2; y < Main.windowY + (columnHeight - Main.windowY) / 2; y++) {
-                    textureY = y * currentTexture.size / columnHeight;
-                    //pixelColor = currentTexture.pixels[textureX + textureY * currentTexture.size]; //I'd like to figure out how to decrease the brightness of a hex RGB value and use it for lighting
-                    //screen.setRGB(x, (Main.windowY - columnHeight) / 2 + y, pixelColor);
-                    int currentPixel = currentTexture.pixels[textureX + textureY * currentTexture.size];
-                    int a = (int)(currentPixel >> 24) & 0xFF;
-                    int r = (int) (((currentPixel >> 16) & 0xFF)); r -= Math.min(lightDropOff, r);
-                    int b = (int) (((currentPixel >> 8) & 0xFF) - 0.05 * collision); b -= Math.min(lightDropOff, b);// * (int)Math.max((0.9 * collision), 0.1));
-                    int green = (int) ((currentPixel & 0xFF) - 0.05 * collision); green -= Math.min(lightDropOff, green);//*/
-                    screenPixels[x + (y + (Main.windowY - columnHeight) /2 ) * Main.windowX] = (a << 24) | (r << 16) | (green << 8) | b;//currentPixel;
-                }
+
+            int startY = (columnHeight > Main.windowY) ? (columnHeight - Main.windowY) / 2 : 0;
+            int endY = (columnHeight > Main.windowY) ? Main.windowY + (columnHeight - Main.windowY) / 2 : columnHeight;
+            //the statement between the ? and the : is assigned if columnHeight > windowY, the statement to the right of the : is assigned if it isnt
+
+            for(int y = startY; y < endY; y++) {
+                textureY = y * currentTexture.size / columnHeight;
+                int currentPixel = currentTexture.pixels[Math.max(textureX + textureY * currentTexture.size,0)];
+                int a = (int)(currentPixel >> 24) & 0xFF;
+                int r = (int) (((currentPixel >> 16) & 0xFF)); r -= Math.min(lightDropOff, r);
+                int b = (int) (((currentPixel >> 8) & 0xFF)); b -= Math.min(lightDropOff, b);
+                int g = (int) ((currentPixel & 0xFF)); g -= Math.min(lightDropOff, g);
+                screenPixels[x + (y + (Main.windowY - columnHeight) /2 ) * Main.windowX] = (a << 24) | (r << 16) | (g << 8) | b;
             }
-            else {
-                for(int y = 0; y < columnHeight; y++) {
-                    textureY = y * currentTexture.size / columnHeight;
-                    //pixelColor = currentTexture.pixels[textureX + textureY * currentTexture.size]; //I'd like to figure out how to decrease the brightness of a hex RGB value and use it for lighting
-                    //screen.setRGB(x, (Main.windowY - columnHeight) / 2 + y, pixelColor);
-                    int currentPixel = currentTexture.pixels[textureX + textureY * currentTexture.size];
-                    float[] hsv = new float[3];
-                    int a = (int)(currentPixel >> 24) & 0xFF;
-                    int r = (int) (((currentPixel >> 16) & 0xFF)); r -= Math.min(lightDropOff, r);
-                    int b = (int) (((currentPixel >> 8) & 0xFF) - 0.05 * collision); b -= Math.min(lightDropOff, b);// * (int)Math.max((0.9 * collision), 0.1));
-                    int green = (int) ((currentPixel & 0xFF) - 0.05 * collision); green -= Math.min(lightDropOff, green);//*/
-                    screenPixels[x + (y + (Main.windowY - columnHeight) / 2) * Main.windowX] = (a << 24) | (r << 16) | (green << 8) | b;
-                }
-            }
-            //as of right now you need to switch x and y, i dont know why. you also need to subtract player rotation from 180 degrees
-            //and turn it to radians
-            //System.out.println(screenPixels[4]);
-            //System.out.println(collision);
         }
         
         g2d.drawImage(screen, null, 0, 0);
