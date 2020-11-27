@@ -118,7 +118,7 @@ public class Scene extends JPanel {
             double cameraX = 2 * x / (double)rayCastScreenPixelColumns - 1;
             pixel = new Ray(playerY / (double)Main.cellSize, playerX / (double)Main.cellSize, Math.toRadians(180-playerRotation), cameraX);
             collision = pixel.findCollision();
-            lightDropOff = collision * 4; //how much the brightness drops off as a unit of distance
+            lightDropOff = collision * 5; //how much the brightness drops off as a unit of distance
             //How tall the column of pixels will be at x. We use the inverse of the collision distance because as the distance increases,
             //the height of the column should decrease. This is then multiplied by the window height and scaled by 40
             columnHeight = (int)(1 / collision / Main.cellSize * Main.windowY * 30 * ((double)Main.windowX / 1280));
