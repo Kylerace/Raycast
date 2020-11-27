@@ -15,6 +15,10 @@ import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.awt.image.DataBufferInt;
 import java.io.File;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
+import java.util.TreeMap;
 
 import javax.swing.*;
 
@@ -36,7 +40,11 @@ public class Scene extends JPanel {
     private int[][] mazeWalls = maze.getMaze();
     private int rayCastScreenPixelColumns = Main.windowX; //We could probably remove this in the final version and just replace the references with Main.windowX
     private double lightDropOff;
-
+    private long screenStart;
+    private long screenEnd;
+    private long[][] screenTimes = new long[10000][2];
+    private Set<Integer> columnHeights = new HashSet<Integer>();
+    Long[] columnArray;
     public Scene(double x, double y) {
         this.playerCoords = new double[] {x, y};
         miniMapGraphics.setColor(Color.BLUE);
@@ -176,10 +184,13 @@ public class Scene extends JPanel {
             int startY = (columnHeight > Main.windowY) ? (columnHeight - Main.windowY) / 2 : 0;
             int endY = (columnHeight > Main.windowY) ? Main.windowY + (columnHeight - Main.windowY) / 2 : columnHeight;
             //the statement between the ? and the : is assigned if columnHeight > windowY, the statement to the right of the : is assigned if it isnt
-
+            screenStart = System.nanoTime();
             for(int y = startY; y < endY; y++) { //Thank you for doing this. I was going to do it first thing because it annoyed me that there were separate loops
                 textureY = y * currentTexture.size / columnHeight;
+                
                 int currentPixel = currentTexture.pixels[Math.max(textureX + textureY * currentTexture.size,0)];
+                
+                
                 if (collision > 2) { //I was having issues with lag, so I found that this fixed it. It was still going through the operation for every pixel even when the player was too close for it to matter
                     int a = (int) (currentPixel >> 24) & 0xFF;
                     int r = (int) (((currentPixel >> 16) & 0xFF)); r -= Math.min(lightDropOff, r);
@@ -188,10 +199,20 @@ public class Scene extends JPanel {
                     //bit operations are evil, hexadecimal can be evil, therefore this is somewhere between evil and evil^2
                     //translates the integer inside of the current texture pixel into its component a,r,b,g values so we can darken them with distance
                     //they must be translated back to work
+                    
                     currentPixel = (a << 24) | (r << 16) | (g << 8) | b;
+                    
+                    
+                    //System.out.println(screenEnd - screenStart);
                 }
+                
                 screenPixels[x + (y + (Main.windowY - columnHeight) /2 ) * Main.windowX] = currentPixel;
+                
+                
             }
+            screenEnd = System.nanoTime();
+            screenTimes[columnHeight][0] += (long)(screenEnd - screenStart);
+            screenTimes[columnHeight][1] += 1;
         }
         
         g2d.drawImage(screen, null, 0, 0);
@@ -218,7 +239,14 @@ public class Scene extends JPanel {
         g2d.fillRect(Main.windowX / 5 / 2 + Main.windowX / 64 - Main.cellSize / 8, Main.windowX / 5 / 2 + Main.windowX / 64 - Main.cellSize / 8, Main.cellSize / 4, Main.cellSize / 4);
         //Used for timing the length it takes to render a frame
         double end = System.nanoTime();
-        System.out.println((double)(end - start)/1000000); //with 4000 rays it should take between 0.8 and 1.3 MILLISECONDS per frame
+        //columnHeights.toArray(columnArray);
+        for (int i = 0; i < screenTimes.length; i++) {
+            if (screenTimes[i][0] > 0) {
+                System.out.println("average time "+screenTimes[i][0]/screenTimes[i][1]+" columnHeight "+i+" total count of this height "+screenTimes[i][1]);
+            }
+            
+        }
+        //System.out.println((double)(end - start)/1000000); //with 4000 rays it should take between 0.8 and 1.3 MILLISECONDS per frame
     }
 
 }
