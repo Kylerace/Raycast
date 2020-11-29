@@ -39,7 +39,8 @@ public class Scene extends JPanel {
     // private int[][] mazeWalls = maze.getMaze(); //Currently unused. Not sure where it will be used, but I'll keep it for the time being
     private int rayCastScreenPixelColumns = Main.windowX; //We could probably remove this in the final version and just replace the references with Main.windowX
     private double lightDropOff;
-
+    private static BufferedImage shadow = new BufferedImage(Main.windowX,Main.windowY, BufferedImage.TYPE_INT_ARGB);
+    private static Graphics2D shadowGraphics = shadow.createGraphics();
     public Scene(double x, double y) {
         this.playerCoords = new double[] {x, y};
         try {
@@ -181,6 +182,9 @@ public class Scene extends JPanel {
         s.setColor(new Color(0, 0, 0, 0));
         s.setComposite(AlphaComposite.Src); //This resets the wallRender image to a new, completely transparent image
         s.fillRect(0, 0, Main.windowX, Main.windowY);
+        shadowGraphics.setColor(new Color(0, 0, 0, 0));
+        shadowGraphics.fillRect(0, 0, Main.windowX, Main.windowY);
+        shadowGraphics.setComposite(AlphaComposite.Src);
         //This does the collision calculations and renders the scene in 3D
         for (int x = 0; x < rayCastScreenPixelColumns; x++) {
             double cameraX = 2 * x / (double)rayCastScreenPixelColumns - 1;
@@ -195,21 +199,26 @@ public class Scene extends JPanel {
             else { //This may need to change in the future if we add more wall types
                 currentTexture = exitTexture;
             }
-            lightDropOff = collision * 10; //how much the brightness drops off as a unit of distance
+            lightDropOff = collision * 20; //how much the brightness drops off as a unit of distance
             //How tall the column of pixels will be at x. We use the inverse of the collision distance because as the distance increases,
             //the height of the column should decrease. This is then multiplied by the window height and scaled by 40
             columnHeight = (int)(1 / collision / Main.cellSize * Main.windowY * 30 * ((double)Main.windowX / 1280));
             textureX = pixel.getWallX(currentTexture.size);
             //This handles texture mapping by scaling the image down to the appropriate size for each pixel
 
+            shadowGraphics.setColor(new Color(0,0,0,Math.min((int)(2*lightDropOff),255)));
+            
+            
+            //*/
+
             int startY = (columnHeight > Main.windowY) ? (columnHeight - Main.windowY) / 2 : 0;
             int endY = (columnHeight > Main.windowY) ? Main.windowY + (columnHeight - Main.windowY) / 2 : columnHeight;
             //the statement between the ? and the : is assigned if columnHeight > windowY, the statement to the right of the : is assigned if it isnt
-
+            shadowGraphics.drawLine(x, startY + (Main.windowY - columnHeight) /2, x, endY + (Main.windowY - columnHeight) /2);
             for(int y = startY; y < endY; y++) { //Thank you for doing this. I was going to do it first thing because it annoyed me that there were separate loops
                 textureY = y * currentTexture.size / columnHeight;
                 int currentPixel = currentTexture.pixels[Math.max(textureX + textureY * currentTexture.size,0)];
-                if (collision > 2.5) { //I was having issues with lag, so I found that this fixed it. It was still going through the operation for every pixel even when the player was too close for it to matter
+                /*if (collision > 2.5) { //I was having issues with lag, so I found that this fixed it. It was still going through the operation for every pixel even when the player was too close for it to matter
                     int a = (int) (currentPixel >> 24) & 0xFF;
                     int r = (int) (((currentPixel >> 16) & 0xFF)); r -= Math.min(lightDropOff, r);
                     int b = (int) (((currentPixel >> 8) & 0xFF)); b -= Math.min(lightDropOff, b);
@@ -218,12 +227,13 @@ public class Scene extends JPanel {
                     //translates the integer inside of the current texture pixel into its component a,r,b,g values so we can darken them with distance
                     //they must be translated back to work
                     currentPixel = (a << 24) | (r << 16) | (g << 8) | b;
-                }
+                }*/
                 wallRenderPixels[x + (y + (Main.windowY - columnHeight) /2 ) * Main.windowX] = currentPixel;
             }
         }
         g2d.drawImage(resizedBackground, null, 0, 0);
         g2d.drawImage(wallRender, null, 0, 0);
+        g2d.drawImage(shadow, null, 0,0);
         g2d.setColor(Color.ORANGE);
         
         /*  THIS STUFF LOOKS LIKE A MESS. In reality, it's a bunch of graphical stuff, so there are a lot of numbers that help determine the scale
