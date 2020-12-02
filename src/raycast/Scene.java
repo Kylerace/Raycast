@@ -208,13 +208,14 @@ public class Scene extends JPanel {
             int startY = (columnHeight > Main.windowY) ? (columnHeight - Main.windowY) / 2 : 0;
             int endY = (columnHeight > Main.windowY) ? Main.windowY + (columnHeight - Main.windowY) / 2 : columnHeight;
             //the statement between the ? and the : is assigned if columnHeight > windowY, the statement to the right of the : is assigned if it isnt
+            float darkenDropOff = (float)(Math.max(0,150-(lightDropOff)) / 150);
             if (collision > 0) {
                 for(int y = startY; y < endY; y++) { //Thank you for doing this. I was going to do it first thing because it annoyed me that there were separate loops
                     textureY = y * currentTexture.size / columnHeight;
                     currentPixel = currentTexture.pixels[Math.max(textureY + textureX * currentTexture.size,0)];
-                    r = (int) (((currentPixel >> 16) & 0xFF)); r -= Math.min(lightDropOff, r);
-                    b = (int) (((currentPixel >> 8) & 0xFF)); b -= Math.min(lightDropOff, b);
-                    g = (int) ((currentPixel & 0xFF)); g -= Math.min(lightDropOff, g);
+                    r = (int) (((currentPixel >> 16) & 0xFF) * darkenDropOff);
+                    b = (int) (((currentPixel >> 8) & 0xFF) * darkenDropOff);
+                    g = (int) ((currentPixel & 0xFF) * darkenDropOff);
                     //bit operations are evil, hexadecimal can be evil, therefore this is somewhere between evil and evil^2
                     //translates the integer inside of the current texture pixel into its component a,r,b,g values so we can darken them with distance
                     //they must be translated back to work

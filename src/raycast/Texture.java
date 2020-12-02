@@ -27,19 +27,11 @@ public class Texture {
         pixels = new int[size * size];
         try {
             texture = ImageIO.read(new File(filePath));
-            //texture.getRGB(0, 0, size, size, pixels, 0, size);
             for(int x = 0; x < size; x++) {
                 for(int y = 0; y < size; y++) {
                     pixels[x*size +y] = texture.getRGB(x, y);
                 }
-            }//*/
-            /*int yoff = 0;
-            for (int y = 0; y < 0+size; y++, yoff+=size) {
-                int off = yoff;
-                for (int x = 0; x < 0+size; x++) {
-                    pixels[off++] = texture.getRGB(y,x);
-                }
-            }//*/
+            }
             texRaster = texture.getRaster();
             texture.setAccelerationPriority(1.0f);
         }
