@@ -14,6 +14,10 @@ package raycast;
 import java.awt.event.*;
 import javax.swing.*;
 import javax.swing.Timer;
+import javax.swing.event.MouseInputListener;
+
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseAdapter;
 
 @SuppressWarnings("serial")
 public class Main extends JFrame implements ActionListener {
@@ -21,7 +25,7 @@ public class Main extends JFrame implements ActionListener {
     public static int windowY = 720; //Keep this at a standard round 16:9 resolution (144p, 360p, 450p, 720p, 1080p, etc.) but make sure it is smaller than your monitor resolution. (480p does not work because the width is actually fractional and just rounded up in real life)
     public static int windowX = windowY * 16 / 9; //Sets the X of the window based on a 16:9 aspect ratio
     public static int cellSize = windowX / mazeSize;
-    private static boolean left, right, backwards, forwards, turnLeft, turnRight, render; //These will be used for the movement, and render will be used to determine whether or not a freame needs to be rendered
+    private static boolean left, right, backwards, forwards, turnLeft, turnRight, render, mouseTurned; //These will be used for the movement, and render will be used to determine whether or not a freame needs to be rendered
     private static Scene scene = new Scene(cellSize * 1.5, cellSize * 1.5); //Calls to the graphics function to draw the scene
     static Timer keyTimer = new Timer(10, new Main()); //This is the clock of the game. It runs a tick every 10ms
     private static double baseSpeed = (double)cellSize / 35;
@@ -29,6 +33,8 @@ public class Main extends JFrame implements ActionListener {
     public static double crouchSpeed = baseSpeed / 1.5;
     public static double runSpeed = baseSpeed * 1.5;
     public static int rotateSpeed = 2;
+    public static int mouseX = -100000;
+    public static int mouseTurnRate = 0;
     enum Movement {
         FL, F, FR,
         L,      R,
@@ -60,7 +66,8 @@ public class Main extends JFrame implements ActionListener {
                 else if (e.getKeyCode() == KeyEvent.VK_A)       { left      = true; }
                 else if (e.getKeyCode() == KeyEvent.VK_S)       { backwards = true; }
                 else if (e.getKeyCode() == KeyEvent.VK_D)       { right     = true; }
-
+                else if (e.getKeyCode() == KeyEvent.VK_ESCAPE)  { exitGame();}//this can later be a pausegame function
+                    
                 if      (e.getKeyCode() == KeyEvent.VK_SHIFT)   { moveSpeed = runSpeed; }
                 else if (e.getKeyCode() == KeyEvent.VK_CONTROL) { moveSpeed = crouchSpeed; }
             }
@@ -79,6 +86,19 @@ public class Main extends JFrame implements ActionListener {
                 else if (e.getKeyCode() == KeyEvent.VK_CONTROL) { moveSpeed = baseSpeed; }
             }
         });
+        f.addMouseMotionListener(new MouseAdapter() {
+            public void mouseMoved(MouseEvent m) {
+                int newMouseX = m.getX();
+                if (mouseX < -10000) {
+                    mouseX = newMouseX;
+                } else if (mouseX < newMouseX + 10 || mouseX > newMouseX - 10) {
+                    mouseTurned = true;
+                    mouseTurnRate = newMouseX - mouseX;
+                    mouseX = newMouseX;
+                }
+            }
+        });
+        
         f.add(scene);
         f.setResizable(false);
         f.setVisible(true);
@@ -124,12 +144,24 @@ public class Main extends JFrame implements ActionListener {
                 render = true;
             }
         }
+        if (mouseTurned) {
+            System.out.println(mouseX);
+            scene.rotate(mouseTurnRate);
+            render = true;
+            mouseTurned = false;
+        }
         //This makes sure that a frame is only rendered if the player has moved. It's just to reduce CPU load.
         //Since there is nothing moving other than the player, it makes no sense to render the same screen repeatedly.
-        if (render) {
-            scene.renderFrame();
-        }
+        //if (render) {
+        scene.renderFrame();
+        //}
         render = false;
+    }
+
+    public static void exitGame() {
+        System.out.println("Goodbye!");
+        keyTimer.stop();
+        System.exit(0);
     }
 
     public static void gameOver() {
