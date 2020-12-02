@@ -179,6 +179,8 @@ public class Scene extends JPanel {
         int textureX;
         int textureY;
         Texture currentTexture; //When we have a designated start and end cell, this will have an if statement to display the textures for the start and end
+        int currentPixel;
+        int a,r,g,b;
         s.setColor(new Color(0, 0, 0, 0));
         s.setComposite(AlphaComposite.Src); //This resets the wallRender image to a new, completely transparent image
         s.fillRect(0, 0, Main.windowX, Main.windowY);
@@ -206,22 +208,26 @@ public class Scene extends JPanel {
             int startY = (columnHeight > Main.windowY) ? (columnHeight - Main.windowY) / 2 : 0;
             int endY = (columnHeight > Main.windowY) ? Main.windowY + (columnHeight - Main.windowY) / 2 : columnHeight;
             //the statement between the ? and the : is assigned if columnHeight > windowY, the statement to the right of the : is assigned if it isnt
-
-            for(int y = startY; y < endY; y++) { //Thank you for doing this. I was going to do it first thing because it annoyed me that there were separate loops
-                textureY = y * currentTexture.size / columnHeight;
-                int currentPixel = currentTexture.pixels[Math.max(textureX + textureY * currentTexture.size,0)];
-                if (collision > 2.5) { //I was having issues with lag, so I found that this fixed it. It was still going through the operation for every pixel even when the player was too close for it to matter
-                    int a = (int) (currentPixel >> 24) & 0xFF;
-                    int r = (int) (((currentPixel >> 16) & 0xFF)); r -= Math.min(lightDropOff, r);
-                    int b = (int) (((currentPixel >> 8) & 0xFF)); b -= Math.min(lightDropOff, b);
-                    int g = (int) ((currentPixel & 0xFF)); g -= Math.min(lightDropOff, g);
+            if (collision > 0) {
+                for(int y = startY; y < endY; y++) { //Thank you for doing this. I was going to do it first thing because it annoyed me that there were separate loops
+                    textureY = y * currentTexture.size / columnHeight;
+                    currentPixel = currentTexture.pixels[Math.max(textureY + textureX * currentTexture.size,0)];
+                    r = (int) (((currentPixel >> 16) & 0xFF)); r -= Math.min(lightDropOff, r);
+                    b = (int) (((currentPixel >> 8) & 0xFF)); b -= Math.min(lightDropOff, b);
+                    g = (int) ((currentPixel & 0xFF)); g -= Math.min(lightDropOff, g);
                     //bit operations are evil, hexadecimal can be evil, therefore this is somewhere between evil and evil^2
                     //translates the integer inside of the current texture pixel into its component a,r,b,g values so we can darken them with distance
                     //they must be translated back to work
-                    currentPixel = (a << 24) | (r << 16) | (g << 8) | b;
+                    currentPixel = (255 << 24) | (r << 16) | (g << 8) | b;
+                    wallRenderPixels[x + (y + (Main.windowY - columnHeight) /2 ) * Main.windowX] = currentPixel;
                 }
-                wallRenderPixels[x + (y + (Main.windowY - columnHeight) /2 ) * Main.windowX] = currentPixel;
+            } else {
+                for(int y = startY; y < endY; y++) { //Thank you for doing this. I was going to do it first thing because it annoyed me that there were separate loops
+                    textureY = y * currentTexture.size / columnHeight;
+                    wallRenderPixels[x + (y + (Main.windowY - columnHeight) /2 ) * Main.windowX] = currentTexture.pixels[Math.max(textureY + textureX * currentTexture.size,0)];
+                }
             }
+            
         }
         g2d.drawImage(resizedBackground, null, 0, 0);
         g2d.drawImage(wallRender, null, 0, 0);
