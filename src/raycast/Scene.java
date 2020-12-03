@@ -43,6 +43,7 @@ public class Scene extends JPanel {
     public Scene(double x, double y) {
         this.playerCoords = new double[] {x, y};
         maze.findTurfByIndex((int)x/Main.cellSize,(int)y/Main.cellSize).turfType = 0;
+        wallRender.setAccelerationPriority(1f);
         try {
             background = ImageIO.read(new File("assets" + File.separator + "textures" + File.separator + "Background.png"));
             Graphics2D g2d = resizedBackground.createGraphics();
@@ -171,6 +172,7 @@ public class Scene extends JPanel {
         super.paintComponent(graphic);
         this.setBackground(Color.BLACK);
         Graphics2D g2d = (Graphics2D) graphic;
+        //s = wallRender.createGraphics();
         // g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON); /* This is antialiasing. We can turn this on later if necessary */
         g2d.setColor(Color.WHITE);
         Ray pixel;
@@ -198,18 +200,18 @@ public class Scene extends JPanel {
             else { //This may need to change in the future if we add more wall types
                 currentTexture = exitTexture;
             }
-            lightDropOff = collision * 10; //how much the brightness drops off as a unit of distance
+            lightDropOff = collision * 11 + (Math.pow(collision,2)/5); //how much the brightness drops off as a unit of distance
             //How tall the column of pixels will be at x. We use the inverse of the collision distance because as the distance increases,
             //the height of the column should decrease. This is then multiplied by the window height and scaled by 40
             columnHeight = (int)(1 / collision / Main.cellSize * Main.windowY * 30 * ((double)Main.windowX / 1280));
             textureX = pixel.getWallX(currentTexture.size);
             //This handles texture mapping by scaling the image down to the appropriate size for each pixel
-
             int startY = (columnHeight > Main.windowY) ? (columnHeight - Main.windowY) / 2 : 0;
             int endY = (columnHeight > Main.windowY) ? Main.windowY + (columnHeight - Main.windowY) / 2 : columnHeight;
             //the statement between the ? and the : is assigned if columnHeight > windowY, the statement to the right of the : is assigned if it isnt
-            float darkenDropOff = (float)(Math.max(0,150-(lightDropOff)) / 150);
-            if (collision > 0) {
+            float darkenDropOff = (float)(Math.max(0,160-(lightDropOff)) / 150);
+            
+            if (collision > 0.8) {//at collision distance of 0.7 you can kinda just barely see the difference between lighting on and off
                 for(int y = startY; y < endY; y++) { //Thank you for doing this. I was going to do it first thing because it annoyed me that there were separate loops
                     textureY = y * currentTexture.size / columnHeight;
                     currentPixel = currentTexture.pixels[Math.max(textureY + textureX * currentTexture.size,0)];
@@ -219,11 +221,12 @@ public class Scene extends JPanel {
                     //bit operations are evil, hexadecimal can be evil, therefore this is somewhere between evil and evil^2
                     //translates the integer inside of the current texture pixel into its component a,r,b,g values so we can darken them with distance
                     //they must be translated back to work
-                    currentPixel = (255 << 24) | (r << 16) | (g << 8) | b;
-                    wallRenderPixels[x + (y + (Main.windowY - columnHeight) /2 ) * Main.windowX] = currentPixel;
+                    currentPixel = (255 << 24) | (r << 16) | (g << 8) | b;//*/
+                    wallRenderPixels[x + (y + (Main.windowY - columnHeight) /2 ) * Main.windowX] = currentPixel;//*/currentTexture.pixels[Math.max(textureY + textureX * currentTexture.size,0)];//
+                    
                 }
             } else {
-                for(int y = startY; y < endY; y++) { //Thank you for doing this. I was going to do it first thing because it annoyed me that there were separate loops
+                for(int y = startY; y < endY; y++) { 
                     textureY = y * currentTexture.size / columnHeight;
                     wallRenderPixels[x + (y + (Main.windowY - columnHeight) /2 ) * Main.windowX] = currentTexture.pixels[Math.max(textureY + textureX * currentTexture.size,0)];
                 }
@@ -254,6 +257,7 @@ public class Scene extends JPanel {
         g2d.rotate(-Math.toRadians(180 - playerRotation), Main.windowX / 5 / 2 + Main.windowX / 64, Main.windowX / 5 / 2 + Main.windowX / 64);
         g2d.fillRect(Main.windowX / 5 / 2 + Main.windowX / 64 - Main.cellSize / 8, Main.windowX / 5 / 2 + Main.windowX / 64 - Main.cellSize / 8, Main.cellSize / 4, Main.cellSize / 4);
         //Used for timing the length it takes to render a frame
+        g2d.dispose();
         double end = System.nanoTime();
         System.out.println((double)(end - start)/1000000); //with 4000 rays it should take between 0.8 and 1.3 MILLISECONDS per frame
     }
