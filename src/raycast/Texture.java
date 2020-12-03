@@ -19,11 +19,10 @@ import java.awt.image.*;
 public class Texture {
     public int[] pixels;
     public int size;
-
     public Texture(String filePath, int size) {
         this.size = size;
         BufferedImage texture;
-        WritableRaster texRaster;
+        
         pixels = new int[size * size];
         try {
             texture = ImageIO.read(new File(filePath));
@@ -32,7 +31,6 @@ public class Texture {
                     pixels[x*size +y] = texture.getRGB(x, y);
                 }
             }
-            texRaster = texture.getRaster();
             texture.setAccelerationPriority(1.0f);
         }
         catch (Exception e) {
