@@ -12,6 +12,8 @@
 package raycast;
 
 import java.awt.event.*;
+import java.lang.Object;
+import java.awt.Robot;
 import javax.swing.*;
 import javax.swing.Timer;
 import javax.swing.event.MouseInputListener;
@@ -35,6 +37,9 @@ public class Main extends JFrame implements ActionListener {
     public static int rotateSpeed = 2;
     public static int mouseX = -100000;
     public static int mouseTurnRate = 0;
+    public static Robot bobTheRobot;//be nice to bob, for he is lord of cursor position
+    public static JFrame f;
+    public static boolean bobInControl = false;//if bob is currently moving the mouse position
     enum Movement {
         FL, F, FR,
         L,      R,
@@ -44,8 +49,8 @@ public class Main extends JFrame implements ActionListener {
     public static double[] playerVector = {0, 0}; // {x, y}
     public static void main(String[] args) {
         //Pretty standard graphics setup
-        JFrame f = new JFrame();
-
+        f = new JFrame();
+        
         //This might be irrelevant now, btw. Say something in the group chat about it when you test it and find where you need to have the right border end to see the whole scene
         /* For whatever reason the same settings dont work for all of us, so each of us will get their own setSize bar and they comment it out 
         for everyone else, when you merge a pr dont worry about it, just set it to what works for you and dont touch the commented out ones.
@@ -55,7 +60,7 @@ public class Main extends JFrame implements ActionListener {
         // f.setSize(windowX + 16, windowY + 36); // what works for MATT
         // f.setSize(windowX + 16, windowY + 36); // what works for DYLAN
         //DO NOT EDIT SOMEONE ELSE'S BAR
-
+        //f.setExtendedState(JFrame.MAXIMIZED_BOTH);
         f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         f.addKeyListener(new KeyListener() { //This KeyListener is what allows movement inputs to be detected.
             //If a key is held down during the tick, then the corresponding movement boolean will be true.
@@ -88,21 +93,36 @@ public class Main extends JFrame implements ActionListener {
         });
         f.addMouseMotionListener(new MouseAdapter() {
             public void mouseMoved(MouseEvent m) {
-                int newMouseX = m.getX();
+                int newMouseX = m.getX() + f.getLocation().x;
                 if (mouseX < -10000) {
                     mouseX = newMouseX;
-                } else if (mouseX < newMouseX + 10 || mouseX > newMouseX - 10) {
+                } else if ((mouseX < newMouseX + 0 || mouseX > newMouseX - 0) && !bobInControl) {
+                    if (mouseX == f.getLocation().x + windowX/2) {
+                        System.out.println("AAAAAAAAAAAAAAAAAAAAAAAAAAAAA");
+                    }
                     mouseTurned = true;
                     mouseTurnRate = newMouseX - mouseX;
                     mouseX = newMouseX;
+                }
+                if (bobInControl) {
+                    mouseX = newMouseX;
+                    mouseTurnRate = 0;
+                    mouseTurned = false;
                 }
             }
         });
         
         f.add(scene);
+        try {
+            bobTheRobot = new Robot();
+        } catch (Exception e) {
+
+        }
+        
         f.setResizable(false);
         f.setVisible(true);
         keyTimer.start();
+        //Mouse.grab(true);
 
     }
     @Override
@@ -145,18 +165,32 @@ public class Main extends JFrame implements ActionListener {
             }
         }
         if (mouseTurned) {
-            System.out.println(mouseX);
-            scene.rotate(mouseTurnRate);
+            System.out.println(mouseTurnRate/2);
+            if (mouseTurnRate/2 > 0 || mouseTurnRate/2 < -10) {
+                System.out.print("AHHHHHHHH");
+            }  
+            scene.rotate((int)(mouseTurnRate/2));
             render = true;
+            mouseTurned = false;
+            bobTheRobot.mousePress(InputEvent.BUTTON1_DOWN_MASK);
+            //bobTheRobot.mouseWheel(10);
+            bobInControl = true;
+            mouseX = f.getLocation().x + windowX/2;
+            mouseTurnRate = 0;
+            bobTheRobot.mouseMove(f.getLocation().x + windowX/2,f.getLocation().y + windowY/2);
+            bobInControl = false;
+            mouseX = f.getLocation().x + windowX/2;
+            bobTheRobot.mouseRelease(InputEvent.BUTTON1_DOWN_MASK);
             mouseTurned = false;
         }
         //This makes sure that a frame is only rendered if the player has moved. It's just to reduce CPU load.
         //Since there is nothing moving other than the player, it makes no sense to render the same screen repeatedly.
-        //if (render) {
+        if (render) {
         scene.renderFrame();
-        //}
+        }
         render = false;
     }
+
 
     public static void exitGame() {
         System.out.println("Goodbye!");

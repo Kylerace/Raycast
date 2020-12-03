@@ -260,7 +260,7 @@ public class Scene extends JPanel {
         //Used for timing the length it takes to render a frame
         g2d.dispose();
         double end = System.nanoTime();
-        System.out.println((double)(end - start)/1000000); 
+        //System.out.println((double)(end - start)/1000000); 
     }
 
 }
