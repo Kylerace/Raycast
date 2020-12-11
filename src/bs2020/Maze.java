@@ -1,7 +1,7 @@
 /**  
- *  Title of project
+ *  Basement Simulator 2020
  * 
- *  Date of completion
+ *  December 10th, 2020
  * 
  *  This program was created under the collaboration of Nathan Grimsey, Eric Lumpkin, Dylan Gibbons-Churchward, and Matthew McGuinn
  *  for Martin Hock's CS143 class in the Fall quarter of 2020.
@@ -9,15 +9,15 @@
  *  This code may be found at https://github.com/CS143-Raycasting-Project/Raycast along with documentation.
  */
 
-package raycast;
+package bs2020;
 
+import java.awt.*;
+import java.awt.image.*;
 import java.awt.Point;
 import java.util.Map;
 import java.util.Random;
 import java.util.TreeMap;
 import java.util.TreeSet;
-import java.awt.*;
-import java.awt.image.*;
 
 public class Maze {
 	private int[][] board; // memory for the maze. 1 = wall, 0 = ground
@@ -29,7 +29,6 @@ public class Maze {
 	private int turfSize;// should be the CELL size, so that resolution/this = number of maze tiles
 	private Turf nullSpace;// if an atom goes out of bounds, it goes here. this is so that rays dont go on
 	// for 10000 iterations each time
-	public Turf[][] highLightedTurfs;
 
 	/**
 	 * Creates a random maze with input dimensions(assumes shape is square for now)
@@ -252,7 +251,6 @@ public class Maze {
 	 */
 	public Turf findTurfByIndex(int x, int y) {
 		if (turfMap.length > x && x >= 0 && turfMap[0].length > y && y >= 0) {
-			turfMap[x][y].toggleSpecial();
 			return turfMap[x][y];
 		} else {
 			return nullSpace;

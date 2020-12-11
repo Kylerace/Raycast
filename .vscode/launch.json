@@ -8,14 +8,21 @@
             "type": "java",
             "name": "CodeLens (Launch) - Main",
             "request": "launch",
-            "mainClass": "raycast.Main",
+            "mainClass": "bs2020.Main",
+            "projectName": "Raycast_382f161a"
+        },
+        {
+            "type": "java",
+            "name": "CodeLens (Launch) - Main",
+            "request": "launch",
+            "mainClass": "bs2020.Main",
             "projectName": "Raycast_b51e5b9c"
         },
         {
             "type": "java",
             "name": "CodeLens (Launch) - Main",
             "request": "launch",
-            "mainClass": "raycast.Main",
+            "mainClass": "bs2020.Main",
             "projectName": "Raycast_382f161a"
         },
         {
@@ -31,7 +38,7 @@
             "type": "java",
             "name": "Debug (Launch)-Main<Raycast_2b1f7e4f>",
             "request": "launch",
-            "mainClass": "raycast.Main",
+            "mainClass": "bs2020.Main",
             "projectName": "Raycast_2b1f7e4f"
         }
     ],

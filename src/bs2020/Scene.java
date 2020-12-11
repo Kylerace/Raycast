@@ -1,7 +1,7 @@
 /** 
- *  Title of project
+ *  Basement Simulator 2020
  * 
- *  Date of completion
+ *  December 10th, 2020
  * 
  *  This program was created under the collaboration of Nathan Grimsey, Eric Lumpkin, Dylan Gibbons-Churchward, and Matthew McGuinn
  *  for Martin Hock's CS143 class in the Fall quarter of 2020.
@@ -9,42 +9,39 @@
  *  This code may be found at https://github.com/CS143-Raycasting-Project/Raycast along with documentation.
  */
 
-package raycast;
+package bs2020;
 
 import java.awt.*;
+import java.awt.geom.*;
 import java.awt.image.*;
 import java.io.File;
-
 import javax.imageio.*;
 import javax.swing.*;
-import java.awt.event.*;
-import java.awt.geom.*;
 
 @SuppressWarnings("serial")
 public class Scene extends JPanel {
-    //Points were causing rounding issues, so I just made the coords 2 separate doubles.
-    private static double[] playerCoords; // {x, y}
-    public static int playerRotation = 135; //This is in degrees so that I can just use an int.
     public static Maze maze;
-    private static Texture wallTexture = new Texture("assets" + File.separator + "textures" + File.separator + "RedCobblestoneWall.png", 1280);//Make sure your terminal is IN the Raycast folder
-    private static Texture startTexture = new Texture("assets" + File.separator + "textures" + File.separator + "RedCobblestoneDoor.png", 1280);
-    private static Texture exitTexture = new Texture("assets" + File.separator + "textures" + File.separator + "RedCobblestoneExit.png", 1280);
-    private static BufferedImage miniMap;
+    private static double[] playerCoords; // {x, y}
+    private static double playerRotation = 135; //This is in degrees
+    private static String texturePath = "assets" + File.separator + "textures" + File.separator;
+    private static String itemPath = "assets" + File.separator + "items" + File.separator;
+    private static Texture wallTexture = new Texture(texturePath + "RedCobblestoneWall.png", 1280);//Make sure your terminal is IN the project folder
+    private static Texture startTexture = new Texture(texturePath + "RedCobblestoneDoor.png", 1280);
+    private static Texture exitTexture = new Texture(texturePath + "RedCobblestoneExit.png", 1280);
+    private static BufferedImage miniMap, player;
     private static Graphics miniMapGraphics;
-    private static BufferedImage player;
     private static boolean newTile = true;
     private static BufferedImage wallRender = new BufferedImage(Main.windowX, Main.windowY, BufferedImage.TYPE_INT_ARGB); //This will be used to render the walls pixel by pixel
     private static Graphics2D s = wallRender.createGraphics();
-    private static BufferedImage background, startBackground; //This will grab the background asset to be used in rendering the floor and ceiling
+    private static BufferedImage background, menuBackground; //This will grab the background asset to be used in rendering the floor and ceiling
     private static BufferedImage start, easy, normal, hard, extreme; //These are used for the buttons in the menu
-    private static BufferedImage knife, knifeInv, spoon, spoonInv; //These are used for the items
+    private static BufferedImage knifeInv, spoonInv; //These are used for the items
     //I found this solution after setting each pixel individually with wallRender.setRGB() was way too slow. It links the wallRenderPixel array directly to the wallRender's data, which is why it's faster
     private static int[] wallRenderPixels = ((DataBufferInt)wallRender.getRaster().getDataBuffer()).getData();
-    private static int rayCastScreenPixelColumns = Main.windowX; //We could probably remove this in the final version and just replace the references with Main.windowX
     private static double lightDropOff;
 
-    public static int columns = 5;
-    public static int rows = 3;
+    private static int columns = 5;
+    private static int rows = 3;
     private static int slotSize =  Main.windowX / (columns + rows);
 
     public static Color currentColor;
@@ -59,33 +56,21 @@ public class Scene extends JPanel {
     public Scene() {
         wallRender.setAccelerationPriority(1f);
         //sets textures and resizes some them to fit the resolution
-        try {
-            startBackground = ImageIO.read(new File("assets" + File.separator + "textures" + File.separator + "MenuBackground.png"));
-            startBackground = resizedImage(startBackground, Main.windowX, Main.windowY);
-            background = ImageIO.read(new File("assets" + File.separator + "textures" + File.separator + "Background.png"));
-            background = resizedImage(background, Main.windowX, Main.windowY);
-            player = ImageIO.read(new File("assets" + File.separator + "textures" + File.separator + "Player.png"));
-            player = resizedImage(player, Main.windowX / 64, Main.windowX / 64);
-            start = ImageIO.read(new File("assets" + File.separator + "textures" + File.separator + "Start.png"));
-            start = resizedImage(start, Main.buttonWidth, Main.buttonHeight);
-            easy = ImageIO.read(new File("assets" + File.separator + "textures" + File.separator + "Easy.png"));
-            easy = resizedImage(easy, Main.buttonWidth, Main.buttonHeight);
-            normal = ImageIO.read(new File("assets" + File.separator + "textures" + File.separator + "Normal.png"));
-            normal = resizedImage(normal, Main.buttonWidth, Main.buttonHeight);
-            hard = ImageIO.read(new File("assets" + File.separator + "textures" + File.separator + "Hard.png"));
-            hard = resizedImage(hard, Main.buttonWidth, Main.buttonHeight);
-            extreme = ImageIO.read(new File("assets" + File.separator + "textures" + File.separator + "Extreme.png"));
-            extreme = resizedImage(extreme, Main.buttonWidth, Main.buttonHeight);
-
-            knifeInv = ImageIO.read(new File("assets" + File.separator + "items" + File.separator + "knife inv.png"));
-            knifeInv = resizedImage(knifeInv, slotSize, slotSize);
-            spoonInv = ImageIO.read(new File("assets" + File.separator + "items" + File.separator + "spoon inv.png"));
-            spoonInv = resizedImage(spoonInv, slotSize, slotSize);
-
-        }
-        catch (Exception e) {
-
-        }
+        //Loads the menu background
+        menuBackground = resizedImage(texturePath + "MenuBackground.png", Main.windowX, Main.windowY);
+        //Loads the background asset for the floor and ceiling
+        background = resizedImage(texturePath + "Background.png", Main.windowX, Main.windowY);
+        //Loads the texture used for the player icon on the minimap
+        player = resizedImage(texturePath + "Player.png", Main.windowX / 64, Main.windowX / 64);
+        //Loads the menu buttons
+        start = resizedImage(texturePath + "Start.png", Main.buttonWidth, Main.buttonHeight);
+        easy = resizedImage(texturePath + "Easy.png", Main.buttonWidth, Main.buttonHeight);
+        normal = resizedImage(texturePath + "Normal.png", Main.buttonWidth, Main.buttonHeight);
+        hard = resizedImage(texturePath + "Hard.png", Main.buttonWidth, Main.buttonHeight);
+        extreme = resizedImage(texturePath + "Extreme.png", Main.buttonWidth, Main.buttonHeight);
+        //Loads the inventory textures
+        knifeInv = resizedImage(itemPath + "knife inv.png", slotSize, slotSize);
+        spoonInv = resizedImage(itemPath + "spoon inv.png", slotSize, slotSize);
     }
 
     /**
@@ -95,11 +80,20 @@ public class Scene extends JPanel {
      * @param height of desired image
      * @return A resized BufferedImage
      */
-    public static BufferedImage resizedImage(BufferedImage input, int width, int height) {
+    public static BufferedImage resizedImage(String filePath, int width, int height) {
+        BufferedImage original;
         BufferedImage resized = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
-        Graphics2D g2d = resized.createGraphics();
-        g2d.drawImage(input, 0, 0, width, height, null);
-        g2d.dispose();
+        try {
+            original = ImageIO.read(new File(filePath));
+            Graphics2D g2d = resized.createGraphics();
+            g2d.drawImage(original, 0, 0, width, height, null);
+            g2d.dispose();
+        }
+        catch (Exception e) {
+            e.printStackTrace();
+            System.out.println("You do not have the proper asset files!");
+            System.exit(1);
+        }
         return resized;
     }
 
@@ -181,33 +175,52 @@ public class Scene extends JPanel {
     public double[] collisionChecked(double[] coords, double[] vector) {
 
         int currentXCell = (int) coords[0] / Main.cellSize;
-        int futureXCell = (int) (coords[0] + vector[0]) / Main.cellSize;
         int currentYCell = (int) coords[1] / Main.cellSize;
-        int futureYCell = (int) (coords[1] + vector[1]) / Main.cellSize;
+        int futureXCell;
+        int futureYCell;
+        boolean collision = false;
+        //Used to determine if the player has visited a new tile, for use with drawPlayerPath()
         boolean newXVisited = true;
         boolean newYVisited = true;
+        //Adds a small border around walls so that the player can't get quite as close
+        if (vector[0] > 0) {
+            futureXCell = (int) (coords[0] + vector[0] + 3) / Main.cellSize;
+        }
+        else {
+            futureXCell = (int) (coords[0] + vector[0] - 3) / Main.cellSize;
+        }
+        if (vector[1] > 0) {
+            futureYCell = (int) (coords[1] + vector[1] + 3) / Main.cellSize;
+        }
+        else {
+            futureYCell = (int) (coords[1] + vector[1] - 3) / Main.cellSize;
+        }
 
-        if(maze.findTurfByIndex(currentYCell, futureXCell).getType() >= 1) {
-            //System.out.println("X Collision!");
+        if(maze.findTurfByIndex(currentYCell, futureXCell).getType() >= 1) { //Player hit a wall in the x direction
             vector[0] = 0;
             newXVisited = false;
+            collision = true;
             if (maze.findTurfByIndex(currentYCell, futureXCell).getType() == 3) {
                 Main.gameOver();
             }
         }
-        if(maze.findTurfByIndex(futureYCell, currentXCell).getType() >= 1) {
-            //System.out.println("Y Collision!");
+        if(maze.findTurfByIndex(futureYCell, currentXCell).getType() >= 1) { //Player hit a wall in the y direction
+            vector[1] = 0;
+            newYVisited = false;
+            collision = true;
+            if (maze.findTurfByIndex(futureYCell, currentXCell).getType() == 3) {
+                Main.gameOver();
+            }
+        }
+        if(maze.findTurfByIndex(futureYCell, futureXCell).getType() >= 1 && !collision) { //Player hit a corner
+            vector[0] = 0;
             vector[1] = 0;
             newYVisited = false;
             if (maze.findTurfByIndex(futureYCell, currentXCell).getType() == 3) {
                 Main.gameOver();
             }
         }
-        // if(maze.findTurfByIndex(futureYCell, futureXCell).getType() >= 1) { //This fixes the corner issue, but the player gets stuck on walls
-        //     //System.out.println("Y Collision!");
-        //     vector[0] = vector[1] = 0;
-        //     newYVisited = newXVisited = false;
-        // }
+        //Used to determine if the player has visited a new tile, for use with drawPlayerPath()
         if (((currentXCell != futureXCell && newXVisited) || (currentYCell != futureYCell && newYVisited))) {
             newTile = true;
         }
@@ -218,7 +231,7 @@ public class Scene extends JPanel {
      * Rotates the player
      * @param angle The angle for the player to rotate
      */
-    public void rotate(int angle) {
+    public void rotate(double angle) {
         playerRotation += angle;
     }
 
@@ -254,17 +267,20 @@ public class Scene extends JPanel {
         super.paintComponent(graphics);
         this.setBackground(Color.black);
         Graphics2D g2d = (Graphics2D) graphics;
+        //Renders the difficulty setting screen
         if (Main.difficultySet) {
-            g2d.drawImage(startBackground, null, 0, 0);
-            g2d.drawImage(easy, null, Main.windowX / 4, Main.windowY / 2);
-            g2d.drawImage(normal, null, Main.windowX / 4, Main.windowY / 2 + (int)(Main.buttonHeight * 1.5));
-            g2d.drawImage(hard, null, Main.windowX / 4, Main.windowY / 2 + (int)(Main.buttonHeight * 3));
-            g2d.drawImage(extreme, null, Main.windowX / 4, Main.windowY / 2 + (int)(Main.buttonHeight * 4.5));
+            g2d.drawImage(menuBackground, null, 0, 0);
+            g2d.drawImage(easy,     null, Main.windowX / 4, Main.windowY / 2);
+            g2d.drawImage(normal,   null, Main.windowX / 4, Main.windowY / 2 + (int)(Main.buttonHeight * 1.5));
+            g2d.drawImage(hard,     null, Main.windowX / 4, Main.windowY / 2 + (int)(Main.buttonHeight * 3));
+            g2d.drawImage(extreme,  null, Main.windowX / 4, Main.windowY / 2 + (int)(Main.buttonHeight * 4.5));
         }
+        //Renders the start menu screen
         else if (Main.startMenu) {
-            g2d.drawImage(startBackground, null, 0, 0);
+            g2d.drawImage(menuBackground, null, 0, 0);
             g2d.drawImage(start, null, Main.windowX / 4, Main.windowY * 2 / 3);
         }
+        //Renders the inventory screen
         else if (Main.inventory) {
             int sidePadding = (Main.windowX - columns * slotSize) / (columns + 1);
             int bottomPadding = (Main.windowY - rows * slotSize) / (rows + 1);
@@ -277,7 +293,9 @@ public class Scene extends JPanel {
 
                     if (inventory[row][column] == 1) currentColor = Color.blue;
                     if (inventory[row][column] == 2) currentColor = Color.red;
-                    if (currentSlot.contains(MouseInfo.getPointerInfo().getLocation())) currentColor = currentColor.darker();
+                    if (Main.mousePos != null) {
+                        if (currentSlot.contains(Main.mousePos)) currentColor = currentColor.darker();
+                    }
                     g2d.setColor(currentColor);
                     g2d.fill(currentSlot);
 
@@ -292,26 +310,25 @@ public class Scene extends JPanel {
                 }
             }
         }
+        //Renders the gameplay
         else {
             //Used for timing the length it takes to render a frame
-            double start = System.nanoTime();
-            //s = wallRender.createGraphics();
-            // g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON); /* This is antialiasing. We can turn this on later if necessary */
+            // double start = System.nanoTime();
             g2d.setColor(Color.WHITE);
             Ray pixel;
             double collision;
             int columnHeight;
             int textureX;
             int textureY;
-            Texture currentTexture; //When we have a designated start and end cell, this will have an if statement to display the textures for the start and end
+            Texture currentTexture;
             int currentPixel;
             int r,g,b;
             s.setColor(new Color(0, 0, 0, 0));
             s.setComposite(AlphaComposite.Src); //This resets the wallRender image to a new, completely transparent image
             s.fillRect(0, 0, Main.windowX, Main.windowY);
             //This does the collision calculations and renders the scene in 3D
-            for (int x = 0; x < rayCastScreenPixelColumns; x++) {
-                double cameraX = 2 * x / (double)rayCastScreenPixelColumns - 1;
+            for (int x = 0; x < Main.windowX; x++) {
+                double cameraX = 2 * x / (double)Main.windowX - 1;
                 pixel = new Ray(playerCoords[1] / (double)Main.cellSize, playerCoords[0] / (double)Main.cellSize, Math.toRadians(180-playerRotation), cameraX);
                 collision = pixel.findCollision();
                 if (pixel.getTurfType() == 1) {
@@ -320,7 +337,7 @@ public class Scene extends JPanel {
                 else if (pixel.getTurfType() == 2) {
                     currentTexture = startTexture;
                 }
-                else { //This may need to change in the future if we add more wall types
+                else {
                     currentTexture = exitTexture;
                 }
                 lightDropOff = collision * 20 + (Math.pow(collision,2)/5); //how much the brightness drops off as a unit of distance
@@ -331,21 +348,21 @@ public class Scene extends JPanel {
                 //This handles texture mapping by scaling the image down to the appropriate size for each pixel
                 int startY = (columnHeight > Main.windowY) ? (columnHeight - Main.windowY) / 2 : 0;
                 int endY = (columnHeight > Main.windowY) ? Main.windowY + (columnHeight - Main.windowY) / 2 : columnHeight;
-                //the statement between the ? and the : is assigned if columnHeight > windowY, the statement to the right of the : is assigned if it isnt
+                //The statement between the ? and the : is assigned if columnHeight > windowY, the statement to the right of the : is assigned if it isnt
                 float darkenDropOff = (float)(Math.max(0,160-(lightDropOff)) / 150);
                 
-                if (collision > 0.8) {//at collision distance of 0.7 you can kinda just barely see the difference between lighting on and off
-                    for(int y = startY; y < endY; y++) { //Thank you for doing this. I was going to do it first thing because it annoyed me that there were separate loops
+                if (collision > 0.8) {//At collision distance of 0.7 you can kinda just barely see the difference between lighting on and off
+                    for(int y = startY; y < endY; y++) {
                         textureY = y * currentTexture.size / columnHeight;
                         currentPixel = currentTexture.pixels[Math.max(textureY + textureX * currentTexture.size,0)];
                         r = (int) (((currentPixel >> 16) & 0xFF) * darkenDropOff);
                         g = (int) (((currentPixel >> 8) & 0xFF) * darkenDropOff);
                         b = (int) ((currentPixel & 0xFF) * darkenDropOff);
-                        //bit operations are evil, hexadecimal can be evil, therefore this is somewhere between evil and evil^2
-                        //translates the integer inside of the current texture pixel into its component a,r,b,g values so we can darken them with distance
-                        //they must be translated back to work
+                        //Bit operations are evil, hexadecimal can be evil, therefore this is somewhere between evil and evil^2.
+                        //Translates the integer inside of the current texture pixel into its component a,r,b,g values so we can darken them with distance.
+                        //They must be translated back to work
                         currentPixel = (255 << 24) | (r << 16) | (g << 8) | b;//*/
-                        wallRenderPixels[x + (y + (Main.windowY - columnHeight) /2 ) * Main.windowX] = currentPixel;//*/currentTexture.pixels[Math.max(textureY + textureX * currentTexture.size,0)];//
+                        wallRenderPixels[x + (y + (Main.windowY - columnHeight) /2 ) * Main.windowX] = currentPixel;
                         
                     }
                 } else {
@@ -361,7 +378,7 @@ public class Scene extends JPanel {
             g2d.setColor(Color.ORANGE);
             
             /*  THIS STUFF LOOKS LIKE A MESS. In reality, it's a bunch of graphical stuff, so there are a lot of numbers that help determine the scale
-            of each GUI element. You don't need to understand exactly how the coordinates are determines, because it has to do with what looked good
+            of each GUI element. You don't need to understand exactly how the coordinates are determined, because it has to do with what looked good
             on the screen, but it should be pretty easy to understand what each line does. Basically, just don't worry about the parameters so long
             as you understand what each line does; I think you'd probably go crazy trying to figure everything out. */
             
@@ -379,10 +396,10 @@ public class Scene extends JPanel {
             //This reverses the rotation needed for the miniMap so that a static player icon can be drawn at the center of the miniMap
             g2d.rotate(-Math.toRadians(180 - playerRotation), Main.windowX / 5 / 2 + Main.windowX / 64, Main.windowX / 5 / 2 + Main.windowX / 64);
             g2d.drawImage(player, null, Main.windowX / 5 / 2 + Main.windowX / 64 - Main.cellSize / 8, Main.windowX / 5 / 2 + Main.windowX / 64 - Main.cellSize / 8);
-            //Used for timing the length it takes to render a frame
             g2d.dispose();
-            double end = System.nanoTime();
-            System.out.println((double)(end - start)/1000000); //with 4000 rays it should take between 0.8 and 1.3 MILLISECONDS per frame
+            //Used for timing the length it takes to render a frame
+            // double end = System.nanoTime();
+            // System.out.println((double)(end - start)/1000000); //Uncomment this and the System.nanoTime() lines to see how long it takes to render a frame in milliseconds
         }
     }
 

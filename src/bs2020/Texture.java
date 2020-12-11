@@ -1,7 +1,7 @@
 /**  
- *  Title of project
+ *  Basement Simulator 2020
  * 
- *  Date of completion
+ *  December 10th, 2020
  * 
  *  This program was created under the collaboration of Nathan Grimsey, Eric Lumpkin, Dylan Gibbons-Churchward, and Matthew McGuinn
  *  for Martin Hock's CS143 class in the Fall quarter of 2020.
@@ -9,7 +9,7 @@
  *  This code may be found at https://github.com/CS143-Raycasting-Project/Raycast along with documentation.
  */
 
-package raycast;
+package bs2020;
 
 import java.awt.image.BufferedImage;
 import java.io.File;
@@ -24,7 +24,6 @@ public class Texture {
     public Texture(String filePath, int size) {
         this.size = size;
         BufferedImage texture;
-        
         pixels = new int[size * size];
         try {
             texture = ImageIO.read(new File(filePath));

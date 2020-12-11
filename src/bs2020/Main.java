@@ -1,7 +1,7 @@
 /** 
- *  Title of project
+ *  Basement Simulator 2020
  * 
- *  Date of completion
+ *  December 10th, 2020
  * 
  *  This program was created under the collaboration of Nathan Grimsey, Eric Lumpkin, Dylan Gibbons-Churchward, and Matthew McGuinn
  *  for Martin Hock's CS143 class in the Fall quarter of 2020.
@@ -9,33 +9,34 @@
  *  This code may be found at https://github.com/CS143-Raycasting-Project/Raycast along with documentation.
  */
 
-package raycast;
+package bs2020;
 
-import java.awt.event.*;
 import java.awt.*;
+import java.awt.event.*;
 import javax.swing.*;
 import javax.swing.Timer;
 
 @SuppressWarnings("serial")
 public class Main extends JFrame implements ActionListener {
     public static int mazeSize;
-    public static int windowY = 720; //Keep this at a standard round 16:9 resolution (144p, 360p, 450p, 720p, 1080p, etc.) but make sure it is smaller than your monitor resolution. (480p does not work because the width is actually fractional and just rounded up in real life)
+    //Keep this at a standard round 16:9 resolution (144p, 360p, 450p, 720p, 1080p, etc.) but make sure it is smaller than your monitor resolution. 
+    //(480p does not work because the width is actually fractional and just rounded up in real life)
+    public static int windowY = 720;
     public static int windowX = windowY * 16 / 9; //Sets the X of the window based on a 16:9 aspect ratio
     public static int cellSize;
     public static int buttonHeight = windowY / 20;
     public static int buttonWidth = windowX / 2;
-    private static boolean left, right, backwards, forwards, turnLeft, turnRight, render; //These will be used for the movement, and render will be used to determine whether or not a freame needs to be rendered
+    //These will be used for the movement, and render will be used to determine whether or not a freame needs to be rendered
+    private static boolean left, right, backwards, forwards, turnLeft, turnRight, render;
     public static boolean startMenu = true;
     public static boolean inventory = false;
     public static boolean difficultySet = false;
     private static Scene scene = new Scene(); //Calls to the graphics function to draw the scene
-    static Timer keyTimer = new Timer(10, new Main()); //This is the clock of the game. It runs a tick every 10ms
-    private static double baseSpeed;
+    private static Timer keyTimer = new Timer(10, new Main()); //This is the clock of the game. It runs a tick every 10ms
     public static double moveSpeed;
-    public static double crouchSpeed;
-    public static double runSpeed;
-    public static int rotateSpeed = 2;
-    static Inventory inv = new Inventory();
+    private static double baseSpeed;
+    private static double rotateSpeed = 1.5;
+    public static Point mousePos = new Point();
 
     public static JFrame f;
 
@@ -49,16 +50,7 @@ public class Main extends JFrame implements ActionListener {
     public static void main(String[] args) {
         //Pretty standard graphics setup
         f = new JFrame();
-        //This might be irrelevant now, btw. Say something in the group chat about it when you test it and find where you need to have the right border end to see the whole scene
-        /* For whatever reason the same settings dont work for all of us, so each of us will get their own setSize bar and they comment it out 
-        for everyone else, when you merge a pr dont worry about it, just set it to what works for you and dont touch the commented out ones.
-        The 36 is for the window bar at the top */
-        // f.setSize(windowX + 16, windowY + 36); //what works for KYLER
-        f.setSize(windowX, windowY + 36); // what works for NATHAN
-        // f.setSize(windowX + 16, windowY + 36); // what works for MATT
-        // f.setSize(windowX + 16, windowY + 36); // what works for DYLAN
-        //DO NOT EDIT SOMEONE ELSE'S BAR
-
+        f.setSize(windowX, windowY + 36); //The +36 is for the window bar at the top
         f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         f.addKeyListener(new KeyListener() { //This KeyListener is what allows movement inputs to be detected.
             //If a key is held down during the tick, then the corresponding movement boolean will be true.
@@ -71,16 +63,12 @@ public class Main extends JFrame implements ActionListener {
                     else if (e.getKeyCode() == KeyEvent.VK_S)       { backwards = true; }
                     else if (e.getKeyCode() == KeyEvent.VK_D)       { right     = true; }
                     
-                    if      (e.getKeyCode() == KeyEvent.VK_SHIFT)   { moveSpeed = runSpeed; }
-                    else if (e.getKeyCode() == KeyEvent.VK_CONTROL) { moveSpeed = crouchSpeed; }
+                    if      (e.getKeyCode() == KeyEvent.VK_SHIFT)   { moveSpeed = baseSpeed * 1.5; }
+                    else if (e.getKeyCode() == KeyEvent.VK_CONTROL) { moveSpeed = baseSpeed / 1.5; }
                 }
-
                 if (e.getKeyCode() == KeyEvent.VK_I) { inventory ^= true; }
-
-                //if (e.getKeyCode() == KeyEvent.VK_1) { Scene.inventory[0][0] = 1; }
-                //if (e.getKeyCode() == KeyEvent.VK_2) { Scene.cornerDivider++; }
             }
-            public void keyTyped(KeyEvent e) { //I will be adding a map button here to view a larger map later
+            public void keyTyped(KeyEvent e) {
 
             }
             public void keyReleased(KeyEvent e) { //If a key is released during the tick, then the corresponding movement boolean will be false.
@@ -102,15 +90,12 @@ public class Main extends JFrame implements ActionListener {
             public void mouseReleased(MouseEvent e) {
                 
             }
-     
             public void mouseEntered(MouseEvent e) {
-                //Scene.currentColor = Color.green;
+
             }
-     
             public void mouseExited(MouseEvent e) {
-                //Scene.currentColor = Scene.color;
+
             }
-     
             public void mouseClicked(MouseEvent e) { //Checks if ther mouse has clicked a button on screen
                 if (startMenu) {
                     if (e.getX() >= Main.windowX / 4 && e.getX() <= Main.windowX * 3 / 4) {    
@@ -141,7 +126,7 @@ public class Main extends JFrame implements ActionListener {
             }
         });
         f.add(scene);
-        f.setResizable(false);
+        f.setResizable(false); //Since things depend on the initial resolution, we restrict the window from being resized
         f.setVisible(true);        
     }
     
@@ -152,8 +137,6 @@ public class Main extends JFrame implements ActionListener {
         cellSize = windowX / mazeSize;
         baseSpeed = (double)cellSize / 35;
         moveSpeed = baseSpeed;
-        crouchSpeed = baseSpeed / 1.5;
-        runSpeed = baseSpeed * 1.5;
         startMenu = false;
         difficultySet = false;
         render = true;
@@ -185,7 +168,6 @@ public class Main extends JFrame implements ActionListener {
             }
         }
         if (currentMove != null) {
-            // System.out.println(Arrays.toString(playerVector) + "\t" + Scene.playerRotation);
             scene.move(currentMove);
             currentMove = null;
         }
@@ -200,6 +182,7 @@ public class Main extends JFrame implements ActionListener {
         if (render) {
             scene.renderFrame();
         }
+        mousePos = f.getMousePosition();
     }
 
     /**
@@ -208,6 +191,6 @@ public class Main extends JFrame implements ActionListener {
     public static void gameOver() {
         System.out.println("You've completed the maze!");
         keyTimer.stop();
-        System.exit(0); //This is temporary, we just don't have a win screen or menu yet
+        System.exit(0); //This is temporary, we just don't have a win screen yet
     }
 }
