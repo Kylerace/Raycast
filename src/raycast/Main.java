@@ -19,7 +19,7 @@ import javax.swing.Timer;
 @SuppressWarnings("serial")
 public class Main extends JFrame implements ActionListener {
     public static int mazeSize;
-    public static int windowY = 1080; //Keep this at a standard round 16:9 resolution (144p, 360p, 450p, 720p, 1080p, etc.) but make sure it is smaller than your monitor resolution. (480p does not work because the width is actually fractional and just rounded up in real life)
+    public static int windowY = 720; //Keep this at a standard round 16:9 resolution (144p, 360p, 450p, 720p, 1080p, etc.) but make sure it is smaller than your monitor resolution. (480p does not work because the width is actually fractional and just rounded up in real life)
     public static int windowX = windowY * 16 / 9; //Sets the X of the window based on a 16:9 aspect ratio
     public static int cellSize;
     public static int buttonHeight = windowY / 20;

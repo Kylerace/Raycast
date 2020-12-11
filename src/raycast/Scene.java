@@ -382,7 +382,7 @@ public class Scene extends JPanel {
             //Used for timing the length it takes to render a frame
             g2d.dispose();
             double end = System.nanoTime();
-            //System.out.println((double)(end - start)/1000000); //with 4000 rays it should take between 0.8 and 1.3 MILLISECONDS per frame
+            System.out.println((double)(end - start)/1000000); //with 4000 rays it should take between 0.8 and 1.3 MILLISECONDS per frame
         }
     }
 
