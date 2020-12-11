@@ -12,16 +12,35 @@
 package raycast;
 
 public class Ray {
-    private double x, y;
-    private double distanceRatioX, distanceRatioY, sideDistX, sideDistY, rayX, rayY, perpendicularVectX, perpendicularVectY, dirX, dirY;
+    private double x, y; //the true x & y coordinates of the player divided by Main.cellsize
+
+    //these are all of the vector x&y components that Ray uses, with sideDistX & Y being the most important
+    private double distanceRatioX, distanceRatioY, //the inverses of rayX and rayY, gets added to sideDistX & Y when they are incremented
+    dirX, dirY, //the x and y components of the vector representing where the player is pointing on the 2d plane
+    rayX, rayY, //dirX & Y but adjusted for which pixel column of the screen this ray represents
+    sideDistX, sideDistY, //gets incremented each tick to represent the total distance the ray has traveled in their respective directions
+    perpendicularVectX, perpendicularVectY; //the x & y components of the vector perpendicular to the dirX & dirY vector (rotated 90 degrees clockwise)
+    
+
     private int nextStepX, nextStepY, currentTurfXIndex, playerTurfYIndex;
+    //nextStepX and nextStepY are set up once, if the ray goes to the east on the 2d plane nextStepX is 1 and -1 otherwise
+    //similar to nextStepY, which is +1 if the ray is going south on the 2d plane and -1 otherwise
+
     private boolean hit = false;
-    private boolean isYSideOfWall;//this is true if the ray is moving up or down this tick, and false otherwise
+    private boolean isYSideOfWall;//this is true if the ray is moving up or down in this moment, and false otherwise
     private double adjustedWallDist;
-    private double collisionCoord;//this is the coordinate of the axis parallel to the wall
+    private double collisionCoord;//this is the coordinate of the collision on the axis parallel to the side of the wall that was hit
     private int turfType;
     //so many vars reeeeeeeee
-    int squaresToCheck = 10000;//this is how many map squares each ray will go through until they give up (if they dont hit anything)
+    int squaresToCheck = 10000;///this is how many map squares each ray will go through until they give up (if they dont hit anything)
+
+    /**
+     * constructs the ray with the given parameters and sets up necessary vectors for findCollision() to work
+     * @param x the true x coordinate of the player divided by Main.cellsize
+     * @param y the true y coordinate of the player divided by Main.cellsize
+     * @param angle the RADIAN measure of the player's angle
+     * @param xColumn which pixel column of the screen this ray represents
+     */
     public Ray (double x, double y, double angle, double xColumn) {
         //GIVE THIS RADIANS AND NOT DEGREES
         //x and y are the coor
@@ -44,11 +63,10 @@ public class Ray {
         
     }
     
-    //move along a single turf at a time and check if its a wall. if it is then return the adjusted euclidian distance. you cant use
-    //normal euclidian distance because it will cause the fisheye effect, so the distance returned by a ray is pretending that the ray is a straight 
-    //line that is coming out of the vector that is perpendicular to dir (dir and perpendicularVect are vectors with x and y components,
-    //so dirX and dirY are actually the two parts for the dir vector representing the players direction, perpendicularVect is a vector rotated 
-    //90 degrees clockwise from dir)
+    /**
+     * move along a single turf at a time and check if its a wall. if it is then return the adjusted distance. 
+     * @return the adjusted wall distance from the screen column this ray is from to the wall this ray hits
+     */
     public double findCollision() {
         int iteration = 0;
         if (rayX < 0) {
@@ -79,9 +97,7 @@ public class Ray {
                 isYSideOfWall = true;
             }
             turfType = Scene.maze.findTurfByIndex(currentTurfXIndex, playerTurfYIndex).turfType;
-            if (turfType > 0) {//0's are floors, anything greater is a wall type
-                //System.out.println("x "+currentTurfXIndex+" y "+playerTurfYIndex+" type "+Main.raymap.findTurfByIndex(currentTurfXIndex, playerTurfYIndex).turfType);
-                //System.out.println(collisionCoord);
+            if (turfType > 0) {//if the turf that the ray is on is a wall, then stop the loop. 0's are floors, anything greater is a wall type
                 hit = true;
                 if (!Scene.maze.findTurfByIndex(currentTurfXIndex, playerTurfYIndex).hasBeenSeen) {
                     Scene.maze.findTurfByIndex(currentTurfXIndex, playerTurfYIndex).hasBeenSeen = true;
@@ -90,6 +106,7 @@ public class Ray {
             }
             iteration++;
         }
+        //calculate the adjusted wall distance
         if (isYSideOfWall == false) {
             adjustedWallDist = (currentTurfXIndex - x + (1 - nextStepX) / 2) / rayX;
             collisionCoord = y + adjustedWallDist * rayY;
@@ -101,15 +118,17 @@ public class Ray {
     }
 
     /**
-     * returns the value for this ray's collision coordinate
-     * @return
+     * returns where on the wall the ray hit. used for texture rendering
+     * @param textureSize the size variable of the texture of the wall that the ray hit
+     * @return which column of the given texture that this ray hit
      */
-    public int getWallX(int textureSize) { //TODO: Fix the way this reverses the texture on some walls
-        //This still isn't fixed and I need to find out why
-        // System.out.println(collisionCoord % 1 * textureSize);
+    public int getWallX(int textureSize) {
         return (int)(collisionCoord % 1 * textureSize);
     }
 
+    /**
+     * @return the type of the wall that this ray hit, used for texture rendering
+     */
     public int getTurfType() {
         return turfType;
     }
