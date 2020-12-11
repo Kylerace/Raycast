@@ -313,7 +313,7 @@ public class Scene extends JPanel {
         //Renders the gameplay
         else {
             //Used for timing the length it takes to render a frame
-            // double start = System.nanoTime();
+            double start = System.nanoTime();
             g2d.setColor(Color.WHITE);
             Ray pixel;
             double collision;
@@ -398,8 +398,8 @@ public class Scene extends JPanel {
             g2d.drawImage(player, null, Main.windowX / 5 / 2 + Main.windowX / 64 - Main.cellSize / 8, Main.windowX / 5 / 2 + Main.windowX / 64 - Main.cellSize / 8);
             g2d.dispose();
             //Used for timing the length it takes to render a frame
-            // double end = System.nanoTime();
-            // System.out.println((double)(end - start)/1000000); //Uncomment this and the System.nanoTime() lines to see how long it takes to render a frame in milliseconds
+            double end = System.nanoTime();
+            System.out.println((double)(end - start)/1000000); //Uncomment this and the System.nanoTime() lines to see how long it takes to render a frame in milliseconds
         }
     }
 
