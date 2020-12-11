@@ -9,6 +9,13 @@
             "name": "CodeLens (Launch) - Main",
             "request": "launch",
             "mainClass": "raycast.Main",
+            "projectName": "Raycast_b51e5b9c"
+        },
+        {
+            "type": "java",
+            "name": "CodeLens (Launch) - Main",
+            "request": "launch",
+            "mainClass": "raycast.Main",
             "projectName": "Raycast_382f161a"
         },
         {

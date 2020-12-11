@@ -17,6 +17,8 @@ import java.io.File;
 
 import javax.imageio.*;
 import javax.swing.*;
+import java.awt.event.*;
+import java.awt.geom.*;
 
 @SuppressWarnings("serial")
 public class Scene extends JPanel {
@@ -35,10 +37,24 @@ public class Scene extends JPanel {
     private static Graphics2D s = wallRender.createGraphics();
     private static BufferedImage background, startBackground; //This will grab the background asset to be used in rendering the floor and ceiling
     private static BufferedImage start, easy, normal, hard, extreme; //These are used for the buttons in the menu
+    private static BufferedImage knife, knifeInv, spoon, spoonInv; //These are used for the items
     //I found this solution after setting each pixel individually with wallRender.setRGB() was way too slow. It links the wallRenderPixel array directly to the wallRender's data, which is why it's faster
     private static int[] wallRenderPixels = ((DataBufferInt)wallRender.getRaster().getDataBuffer()).getData();
     private static int rayCastScreenPixelColumns = Main.windowX; //We could probably remove this in the final version and just replace the references with Main.windowX
     private static double lightDropOff;
+
+    public static int columns = 5;
+    public static int rows = 3;
+    private static int slotSize =  Main.windowX / (columns + rows);
+
+    public static Color currentColor;
+    public static Color color;
+
+    public static int[][] inventory = {
+        {1, 2, 0, 0, 0},
+        {0, 0, 0, 0, 0},
+        {0, 0, 0, 0, 0}
+    };  
 
     public Scene() {
         wallRender.setAccelerationPriority(1f);
@@ -60,6 +76,12 @@ public class Scene extends JPanel {
             hard = resizedImage(hard, Main.buttonWidth, Main.buttonHeight);
             extreme = ImageIO.read(new File("assets" + File.separator + "textures" + File.separator + "Extreme.png"));
             extreme = resizedImage(extreme, Main.buttonWidth, Main.buttonHeight);
+
+            knifeInv = ImageIO.read(new File("assets" + File.separator + "items" + File.separator + "knife inv.png"));
+            knifeInv = resizedImage(knifeInv, slotSize, slotSize);
+            spoonInv = ImageIO.read(new File("assets" + File.separator + "items" + File.separator + "spoon inv.png"));
+            spoonInv = resizedImage(spoonInv, slotSize, slotSize);
+
         }
         catch (Exception e) {
 
@@ -230,7 +252,7 @@ public class Scene extends JPanel {
     @Override
     public void paintComponent(Graphics graphics) {
         super.paintComponent(graphics);
-        this.setBackground(Color.BLACK);
+        this.setBackground(Color.black);
         Graphics2D g2d = (Graphics2D) graphics;
         if (Main.difficultySet) {
             g2d.drawImage(startBackground, null, 0, 0);
@@ -242,6 +264,33 @@ public class Scene extends JPanel {
         else if (Main.startMenu) {
             g2d.drawImage(startBackground, null, 0, 0);
             g2d.drawImage(start, null, Main.windowX / 4, Main.windowY * 2 / 3);
+        }
+        else if (Main.inventory) {
+            int sidePadding = (Main.windowX - columns * slotSize) / (columns + 1);
+            int bottomPadding = (Main.windowY - rows * slotSize) / (rows + 1);
+            color = g2d.getColor();
+            for (int row = 0; row < rows; row++) {
+                for (int column = 0; column < columns; column++) {
+                    int originX = (column * (slotSize + sidePadding)) + sidePadding;
+                    int originY = (row * (slotSize + bottomPadding)) + bottomPadding;
+                    RoundRectangle2D currentSlot = new RoundRectangle2D.Double(originX, originY, slotSize, slotSize, slotSize / 20, slotSize / 20);
+
+                    if (inventory[row][column] == 1) currentColor = Color.blue;
+                    if (inventory[row][column] == 2) currentColor = Color.red;
+                    if (currentSlot.contains(MouseInfo.getPointerInfo().getLocation())) currentColor = currentColor.darker();
+                    g2d.setColor(currentColor);
+                    g2d.fill(currentSlot);
+
+                    if (column == columns - 1) currentColor = Color.yellow;
+                    else currentColor = Color.white;
+                    g2d.setColor(currentColor);
+                    g2d.draw(currentSlot);
+                    currentColor = color;
+                    
+                    if (inventory[row][column] == 1) g2d.drawImage(spoonInv, null, originX, originY);
+                    if (inventory[row][column] == 2) g2d.drawImage(knifeInv, null, originX, originY);
+                }
+            }
         }
         else {
             //Used for timing the length it takes to render a frame
@@ -333,7 +382,7 @@ public class Scene extends JPanel {
             //Used for timing the length it takes to render a frame
             g2d.dispose();
             double end = System.nanoTime();
-            System.out.println((double)(end - start)/1000000); //with 4000 rays it should take between 0.8 and 1.3 MILLISECONDS per frame
+            //System.out.println((double)(end - start)/1000000); //with 4000 rays it should take between 0.8 and 1.3 MILLISECONDS per frame
         }
     }
 

@@ -12,19 +12,21 @@
 package raycast;
 
 import java.awt.event.*;
+import java.awt.*;
 import javax.swing.*;
 import javax.swing.Timer;
 
 @SuppressWarnings("serial")
 public class Main extends JFrame implements ActionListener {
     public static int mazeSize;
-    public static int windowY = 720; //Keep this at a standard round 16:9 resolution (144p, 360p, 450p, 720p, 1080p, etc.) but make sure it is smaller than your monitor resolution. (480p does not work because the width is actually fractional and just rounded up in real life)
+    public static int windowY = 1080; //Keep this at a standard round 16:9 resolution (144p, 360p, 450p, 720p, 1080p, etc.) but make sure it is smaller than your monitor resolution. (480p does not work because the width is actually fractional and just rounded up in real life)
     public static int windowX = windowY * 16 / 9; //Sets the X of the window based on a 16:9 aspect ratio
     public static int cellSize;
     public static int buttonHeight = windowY / 20;
     public static int buttonWidth = windowX / 2;
     private static boolean left, right, backwards, forwards, turnLeft, turnRight, render; //These will be used for the movement, and render will be used to determine whether or not a freame needs to be rendered
     public static boolean startMenu = true;
+    public static boolean inventory = false;
     public static boolean difficultySet = false;
     private static Scene scene = new Scene(); //Calls to the graphics function to draw the scene
     static Timer keyTimer = new Timer(10, new Main()); //This is the clock of the game. It runs a tick every 10ms
@@ -33,6 +35,10 @@ public class Main extends JFrame implements ActionListener {
     public static double crouchSpeed;
     public static double runSpeed;
     public static int rotateSpeed = 2;
+    static Inventory inv = new Inventory();
+
+    public static JFrame f;
+
     enum Movement {
         FL, F, FR, //Front Left, Front, Front Right
         L,      R, //Left,              Right
@@ -42,7 +48,7 @@ public class Main extends JFrame implements ActionListener {
     public static double[] playerVector = {0, 0}; // {x, y}
     public static void main(String[] args) {
         //Pretty standard graphics setup
-        JFrame f = new JFrame();
+        f = new JFrame();
         //This might be irrelevant now, btw. Say something in the group chat about it when you test it and find where you need to have the right border end to see the whole scene
         /* For whatever reason the same settings dont work for all of us, so each of us will get their own setSize bar and they comment it out 
         for everyone else, when you merge a pr dont worry about it, just set it to what works for you and dont touch the commented out ones.
@@ -57,15 +63,22 @@ public class Main extends JFrame implements ActionListener {
         f.addKeyListener(new KeyListener() { //This KeyListener is what allows movement inputs to be detected.
             //If a key is held down during the tick, then the corresponding movement boolean will be true.
             public void keyPressed(KeyEvent e) {
-                if      (e.getKeyCode() == KeyEvent.VK_LEFT)    { turnLeft  = true; }
-                else if (e.getKeyCode() == KeyEvent.VK_RIGHT)   { turnRight = true; }
-                else if (e.getKeyCode() == KeyEvent.VK_W)       { forwards  = true; }
-                else if (e.getKeyCode() == KeyEvent.VK_A)       { left      = true; }
-                else if (e.getKeyCode() == KeyEvent.VK_S)       { backwards = true; }
-                else if (e.getKeyCode() == KeyEvent.VK_D)       { right     = true; }
+                if (!inventory) {
+                    if      (e.getKeyCode() == KeyEvent.VK_LEFT)    { turnLeft  = true; }
+                    else if (e.getKeyCode() == KeyEvent.VK_RIGHT)   { turnRight = true; }
+                    else if (e.getKeyCode() == KeyEvent.VK_W)       { forwards  = true; }
+                    else if (e.getKeyCode() == KeyEvent.VK_A)       { left      = true; }
+                    else if (e.getKeyCode() == KeyEvent.VK_S)       { backwards = true; }
+                    else if (e.getKeyCode() == KeyEvent.VK_D)       { right     = true; }
+                    
+                    if      (e.getKeyCode() == KeyEvent.VK_SHIFT)   { moveSpeed = runSpeed; }
+                    else if (e.getKeyCode() == KeyEvent.VK_CONTROL) { moveSpeed = crouchSpeed; }
+                }
 
-                if      (e.getKeyCode() == KeyEvent.VK_SHIFT)   { moveSpeed = runSpeed; }
-                else if (e.getKeyCode() == KeyEvent.VK_CONTROL) { moveSpeed = crouchSpeed; }
+                if (e.getKeyCode() == KeyEvent.VK_I) { inventory ^= true; }
+
+                //if (e.getKeyCode() == KeyEvent.VK_1) { Scene.inventory[0][0] = 1; }
+                //if (e.getKeyCode() == KeyEvent.VK_2) { Scene.cornerDivider++; }
             }
             public void keyTyped(KeyEvent e) { //I will be adding a map button here to view a larger map later
 
@@ -91,11 +104,11 @@ public class Main extends JFrame implements ActionListener {
             }
      
             public void mouseEntered(MouseEvent e) {
-
+                //Scene.currentColor = Color.green;
             }
      
             public void mouseExited(MouseEvent e) {
-                
+                //Scene.currentColor = Scene.color;
             }
      
             public void mouseClicked(MouseEvent e) { //Checks if ther mouse has clicked a button on screen
